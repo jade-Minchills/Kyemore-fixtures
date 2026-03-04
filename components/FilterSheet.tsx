@@ -1,7 +1,7 @@
 'use client';
 
 import { X, SlidersHorizontal } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface FilterSheetProps {
   fields: string[];
@@ -47,6 +47,18 @@ export function FilterSheet({
 }: FilterSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      // Lock body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const toggleStatus = (status: string) => {
     if (selectedStatus.includes(status)) {
       onStatusChange(selectedStatus.filter((s) => s !== status));
@@ -88,18 +100,19 @@ export function FilterSheet({
             data-testid="filter-sheet-backdrop"
           />
 
-          {/* Sheet */}
+          {/* Sheet Container */}
           <div
-            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up"
+            className="absolute bottom-0 left-0 right-0 flex flex-col bg-white rounded-t-3xl shadow-2xl animate-slide-up"
+            style={{ maxHeight: '85dvh' }}
             data-testid="filter-sheet"
           >
             {/* Handle */}
-            <div className="flex justify-center pt-3 pb-2">
+            <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
               <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
               <h2 className="text-xl font-bold text-gray-900">Filters</h2>
               <button
                 onClick={() => setIsOpen(false)}
@@ -110,94 +123,98 @@ export function FilterSheet({
               </button>
             </div>
 
-            {/* Content */}
-            <div className="p-6 space-y-6 pb-safe">
-              {/* Date Range */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Date Range
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {DATE_RANGE_OPTIONS.map((option) => (
-                    <button
-                      key={option.value}
-                      data-testid={`date-range-${option.value}`}
-                      onClick={() => onDateRangeChange(option.value)}
-                      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                        dateRange === option.value
-                          ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto overscroll-contain">
+              <div className="p-6 space-y-6">
+                {/* Date Range */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Date Range
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {DATE_RANGE_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        data-testid={`date-range-${option.value}`}
+                        onClick={() => onDateRangeChange(option.value)}
+                        className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                          dateRange === option.value
+                            ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Field Filter */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Field
+                  </label>
+                  <select
+                    data-testid="field-filter-select"
+                    value={selectedField}
+                    onChange={(e) => onFieldChange(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors bg-white text-gray-900"
+                  >
+                    <option value="all">All Fields</option>
+                    {fields.map((field) => (
+                      <option key={field} value={field}>
+                        {field}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Time of Day */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Time of Day
+                  </label>
+                  <select
+                    data-testid="time-of-day-filter-select"
+                    value={selectedTimeOfDay}
+                    onChange={(e) => onTimeOfDayChange(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors bg-white text-gray-900"
+                  >
+                    {TIME_OF_DAY_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Status Filter */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Status
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {STATUS_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        data-testid={`status-filter-${option.value}`}
+                        onClick={() => toggleStatus(option.value)}
+                        className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                          selectedStatus.includes(option.value)
+                            ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* Field Filter */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Field
-                </label>
-                <select
-                  data-testid="field-filter-select"
-                  value={selectedField}
-                  onChange={(e) => onFieldChange(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors bg-white text-gray-900"
-                >
-                  <option value="all">All Fields</option>
-                  {fields.map((field) => (
-                    <option key={field} value={field}>
-                      {field}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Time of Day */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Time of Day
-                </label>
-                <select
-                  data-testid="time-of-day-filter-select"
-                  value={selectedTimeOfDay}
-                  onChange={(e) => onTimeOfDayChange(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors bg-white text-gray-900"
-                >
-                  {TIME_OF_DAY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Status Filter */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Status
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {STATUS_OPTIONS.map((option) => (
-                    <button
-                      key={option.value}
-                      data-testid={`status-filter-${option.value}`}
-                      onClick={() => toggleStatus(option.value)}
-                      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                        selectedStatus.includes(option.value)
-                          ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Apply Button */}
+            {/* Fixed Footer */}
+            <div className="flex-shrink-0 p-6 border-t border-gray-200 bg-white">
               <button
                 onClick={() => setIsOpen(false)}
                 className="w-full py-4 bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
@@ -220,9 +237,6 @@ export function FilterSheet({
         }
         .animate-slide-up {
           animation: slide-up 0.3s ease-out;
-        }
-        .pb-safe {
-          padding-bottom: env(safe-area-inset-bottom, 1.5rem);
         }
       `}</style>
     </>
