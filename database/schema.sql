@@ -99,7 +99,8 @@ CREATE POLICY "Authenticated users can delete fixtures"
 -- 6. Insert seed data for initial sports
 INSERT INTO public.sports (name, slug, color, icon, is_active) VALUES
     ('Rugby', 'rugby', '#10B981', 'rugby', TRUE),
-    ('Soccer', 'soccer', '#F59E0B', 'soccer', TRUE)
+    ('Soccer', 'soccer', '#F59E0B', 'soccer', TRUE),
+    ('Events', 'events', '#8B5CF6', 'calendar', TRUE)
 ON CONFLICT (slug) DO NOTHING;
 
 -- 7. Insert sample fixtures (optional - for testing)
