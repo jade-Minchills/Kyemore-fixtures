@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { FixtureWithSport } from '@/lib/types';
 import { formatTime, formatDate } from '@/lib/date-utils';
 import { addDays } from 'date-fns';
+import { Calendar, Clock, MapPin } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -10,7 +11,7 @@ interface PageProps {
   searchParams: Promise<{
     sport?: string;
     field?: string;
-    view?: 'calendar' | 'list';
+    view?: 'list' | 'week' | 'month';
     days?: string;
   }>;
 }
@@ -54,7 +55,7 @@ export default async function EmbedPage({ searchParams }: PageProps) {
     <div className="min-h-screen bg-white p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
             Kylemore Sports Ground Fixtures
           </h1>
           {sport && (
@@ -70,31 +71,41 @@ export default async function EmbedPage({ searchParams }: PageProps) {
               <div
                 key={fixture.id}
                 data-testid={`embed-fixture-${fixture.id}`}
-                className="p-4 rounded-lg border-2 shadow-sm"
+                className="p-5 rounded-xl border-2 shadow-sm hover:shadow-md transition-all"
                 style={{
-                  borderColor: fixture.sport.color,
-                  backgroundColor: `${fixture.sport.color}10`,
+                  borderColor: `${fixture.sport.color}40`,
+                  background: `linear-gradient(135deg, ${fixture.sport.color}08 0%, ${fixture.sport.color}15 100%)`,
                 }}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div
-                      className="inline-block px-2 py-1 rounded text-white text-xs font-bold mb-2"
-                      style={{ backgroundColor: fixture.sport.color }}
-                    >
-                      {fixture.sport.name}
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">
-                      {fixture.title}
-                    </h3>
-                    <p className="text-gray-700 mb-2">
-                      {fixture.home_team} vs {fixture.away_team}
-                    </p>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                      <span>📅 {formatDate(fixture.start_time, 'EEE, MMM d, yyyy')}</span>
-                      <span>🕒 {formatTime(fixture.start_time)}</span>
-                      <span>📍 {fixture.field}</span>
-                    </div>
+                <div className="flex items-start justify-between mb-3">
+                  <div
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-white text-sm font-bold shadow-md"
+                    style={{
+                      background: `linear-gradient(135deg, ${fixture.sport.color} 0%, ${fixture.sport.color}dd 100%)`,
+                    }}
+                  >
+                    <span>{fixture.sport.name}</span>
+                  </div>
+                </div>
+                
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  {fixture.title}
+                </h3>
+                <p className="text-base text-gray-700 mb-3 font-medium">
+                  {fixture.home_team} vs {fixture.away_team}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span>{formatDate(fixture.start_time, 'EEE, MMM d, yyyy')}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-gray-400" />
+                    <span>{formatTime(fixture.start_time)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-gray-400" />
+                    <span>{fixture.field}</span>
                   </div>
                 </div>
               </div>
@@ -102,16 +113,13 @@ export default async function EmbedPage({ searchParams }: PageProps) {
 
             {filteredFixtures.length === 0 && (
               <div className="text-center py-12 text-gray-500">
-                No upcoming fixtures found
+                <div className="text-6xl mb-4">📅</div>
+                <p className="text-lg">No upcoming fixtures found</p>
               </div>
             )}
           </div>
         ) : (
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <p className="text-gray-600 text-center">
-              Calendar view coming soon. Use view=list for now.
-            </p>
-          </div>
+          <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200">\n            <p className="text-gray-600 text-center">\n              Calendar and month views are available on the main site.\n              <br />\n              <a href="/fixtures" className="text-green-600 hover:text-green-700 font-medium">\n                View full calendar →\n              </a>\n            </p>\n          </div>
         )}
 
         {/* Footer */}
