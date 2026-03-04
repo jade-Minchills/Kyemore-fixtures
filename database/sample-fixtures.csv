@@ -1,0 +1,8 @@
+sport,title,home_team,away_team,date,start_time,end_time,field,location_name,status,notes
+Rugby,U18 Rugby,Kylemore,Oakwood,2025-08-18,10:00,11:30,Field 1,Kylemore Sports Ground,scheduled,
+Soccer,Premier Soccer,City FC,Rovers,2025-08-19,14:00,15:30,Field 2,Kylemore Sports Ground,scheduled,
+Rugby,Senior Rugby,Blues,Reds,2025-08-20,16:00,17:30,Field 3,Kylemore Sports Ground,scheduled,
+Soccer,Social Soccer,Team A,Team B,2025-08-20,19:30,21:00,Field 1,Kylemore Sports Ground,scheduled,
+Rugby,Women's Rugby,Kylemore,Valley,2025-08-22,14:00,15:30,Field 3,Kylemore Sports Ground,scheduled,
+Soccer,Jnr Soccer,Lions,Tigers,2025-08-23,10:00,11:30,Field 1,Kylemore Sports Ground,scheduled,
+Cricket,T20 Match,Eagles,Hawks,2025-08-23,16:00,18:00,Field 3,Kylemore Sports Ground,scheduled,New sport will be auto-created
