@@ -7,7 +7,7 @@ import { WeeklyCalendar } from '@/components/WeeklyCalendar';
 import { UpcomingFixtures } from '@/components/UpcomingFixtures';
 import { FixtureModal } from '@/components/FixtureModal';
 import { Filters } from '@/components/Filters';
-import { ViewMode } from '@/components/ViewToggle';
+import { ViewMode, ViewToggle } from '@/components/ViewToggle';
 import { ListView } from '@/components/ListView';
 import { MonthCalendar } from '@/components/MonthCalendar';
 import { FixturesHeader } from '@/components/FixturesHeader';
