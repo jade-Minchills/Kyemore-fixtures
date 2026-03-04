@@ -18,6 +18,12 @@ export default function AdminLoginPage() {
     setError('');
     setLoading(true);
 
+    if (!supabase) {
+      setError('Supabase is not configured. Running in demo mode.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
