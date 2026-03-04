@@ -95,7 +95,10 @@ export function FixturesHeader({
 
           {/* View Toggle + Filter Button - Right side */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <ViewToggle view={view} onViewChange={onViewChange} />
+            {/* ViewToggle - Hidden on mobile, shown on tablet/desktop */}
+            <div className="hidden md:block">
+              <ViewToggle view={view} onViewChange={onViewChange} />
+            </div>
             <div className="md:hidden">
               <FilterSheet
                 fields={fields}
