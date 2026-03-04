@@ -17,6 +17,8 @@ class MockSupabaseClient {
     const chain = {
       eq: () => chain,
       neq: () => chain,
+      gte: () => chain,
+      lte: () => chain,
       order: () => chain,
       limit: () => chain,
       single: () => Promise.resolve({ data: null, error: null }),
