@@ -121,8 +121,8 @@ export function getTimePosition(time: string, startHour: number = 8): number {
   const hours = date.getHours();
   const minutes = date.getMinutes();
   const totalMinutes = (hours - startHour) * 60 + minutes;
-  const totalGridMinutes = 12 * 60; // 8AM to 8PM = 12 hours
-  return (totalMinutes / totalGridMinutes) * 100;
+  const totalGridMinutes = 15 * 60; // 8AM to 11PM = 15 hours
+  return Math.max(0, Math.min(100, (totalMinutes / totalGridMinutes) * 100));
 }
 
 /**
@@ -132,6 +132,6 @@ export function getEventHeight(startTime: string, endTime: string): number {
   const start = new Date(startTime);
   const end = new Date(endTime);
   const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
-  const totalGridMinutes = 12 * 60; // 12 hours
-  return Math.max((durationMinutes / totalGridMinutes) * 100, 5); // Minimum 5%
+  const totalGridMinutes = 15 * 60; // 15 hours (8AM to 11PM)
+  return Math.max((durationMinutes / totalGridMinutes) * 100, 3); // Minimum 3%
 }
