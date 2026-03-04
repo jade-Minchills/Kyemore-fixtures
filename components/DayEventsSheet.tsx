@@ -133,7 +133,7 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         @keyframes slide-up {
           from {
             transform: translateY(100%);
