@@ -139,8 +139,8 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
         onDateRangeChange={setDateRange}
       />
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+      {/* Main Content - Add bottom padding on mobile for bottom nav */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 pb-24 md:pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column: Main View */}
           <div className="lg:col-span-2 space-y-6">
