@@ -56,7 +56,7 @@ export function Filters({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="glass-strong rounded-2xl shadow-xl p-6">
       <button
         onClick={() => setShowFilters(!showFilters)}
         className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4 hover:text-green-600 transition-colors"
@@ -80,10 +80,10 @@ export function Filters({
                   key={option.value}
                   data-testid={`date-range-${option.value}`}
                   onClick={() => onDateRangeChange(option.value)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-md ${
                     dateRange === option.value
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                   }`}
                 >
                   {option.label}
@@ -101,7 +101,7 @@ export function Filters({
               data-testid="field-filter-select"
               value={selectedField}
               onChange={(e) => onFieldChange(e.target.value)}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
+              className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors bg-white shadow-sm"
             >
               <option value="all">All Fields</option>
               {fields.map((field) => (
@@ -121,7 +121,7 @@ export function Filters({
               data-testid="time-of-day-filter-select"
               value={selectedTimeOfDay}
               onChange={(e) => onTimeOfDayChange(e.target.value)}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
+              className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors bg-white shadow-sm"
             >
               {TIME_OF_DAY_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -142,10 +142,10 @@ export function Filters({
                   key={option.value}
                   data-testid={`status-filter-${option.value}`}
                   onClick={() => toggleStatus(option.value)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-md ${
                     selectedStatus.includes(option.value)
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                   }`}
                 >
                   {option.label}
