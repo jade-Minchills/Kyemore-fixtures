@@ -39,7 +39,7 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
       <div
         className="absolute md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 
                    bottom-0 md:bottom-auto left-0 md:left-auto right-0 md:right-auto
-                   flex flex-col bg-white md:rounded-2xl rounded-t-3xl shadow-2xl animate-slide-up
+                   flex flex-col bg-white md:rounded-2xl rounded-t-3xl shadow-2xl animate-slide-up-mobile md:animate-fade-in
                    md:w-[90vw] md:max-w-2xl"
         style={{ maxHeight: '75dvh' }}
       >
