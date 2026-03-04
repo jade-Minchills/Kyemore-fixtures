@@ -6,9 +6,25 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
+  // Check if Supabase is configured
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  // If Supabase is not configured, allow public routes but block admin
+  if (!supabaseUrl || !supabaseKey || supabaseUrl === 'your_supabase_project_url') {
+    // Block admin routes when Supabase is not configured
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/fixtures';
+      return NextResponse.redirect(url);
+    }
+    // Allow public routes
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {
