@@ -115,7 +115,7 @@ export default function AdminUploadPage() {
         .select('name, slug, id');
 
       const sportsMap = new Map(
-        (existingSports || []).map(s => [s.slug, s.id])
+        (existingSports || []).map((s: { slug: string; id: string }) => [s.slug, s.id])
       );
 
       // Identify new sports
