@@ -198,6 +198,11 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
 
       {/* Fixture Modal */}
       <FixtureModal fixture={selectedFixture} onClose={() => setSelectedFixture(null)} />
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="md:hidden">
+        <ViewToggle view={view} onViewChange={setView} variant="bottom-bar" />
+      </div>
     </div>
   );
 }
