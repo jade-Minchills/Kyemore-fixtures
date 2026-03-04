@@ -216,8 +216,8 @@ export function FilterSheet({
               </div>
             </div>
 
-            {/* Fixed Footer */}
-            <div className="flex-shrink-0 p-6 border-t border-gray-200 bg-white">
+            {/* Fixed Footer with safe area padding */}
+            <div className="flex-shrink-0 p-6 border-t border-gray-200 bg-white" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px))' }}>
               <button
                 onClick={() => setIsOpen(false)}
                 className="w-full py-4 bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
