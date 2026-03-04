@@ -115,13 +115,15 @@ export function getDefaultSportColor(sportName: string): string {
 
 /**
  * Calculate position in calendar grid (percentage from top)
+ * TIME_SLOTS: 8AM, 9AM, 10AM, 11AM, 12PM, 1PM, 2PM, 3PM, 4PM, 5PM, 6PM, 7PM, 8PM, 9PM, 10PM, 11PM
+ * That's 16 slots, covering 16 hours (8:00 to 24:00 / midnight)
  */
 export function getTimePosition(time: string, startHour: number = 8): number {
   const date = new Date(time);
   const hours = date.getHours();
   const minutes = date.getMinutes();
   const totalMinutes = (hours - startHour) * 60 + minutes;
-  const totalGridMinutes = 15 * 60; // 8AM to 11PM = 15 hours
+  const totalGridMinutes = 16 * 60; // 16 hours (8AM to midnight covers all 16 slots)
   return Math.max(0, Math.min(100, (totalMinutes / totalGridMinutes) * 100));
 }
 
@@ -132,6 +134,6 @@ export function getEventHeight(startTime: string, endTime: string): number {
   const start = new Date(startTime);
   const end = new Date(endTime);
   const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
-  const totalGridMinutes = 15 * 60; // 15 hours (8AM to 11PM)
+  const totalGridMinutes = 16 * 60; // 16 hours to match time slots
   return Math.max((durationMinutes / totalGridMinutes) * 100, 3); // Minimum 3%
 }
