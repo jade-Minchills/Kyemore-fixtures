@@ -105,6 +105,7 @@ const sportColors: Record<string, string> = {
   tennis: '#8B5CF6',
   hockey: '#06B6D4',
   volleyball: '#EC4899',
+  events: '#8B5CF6',
 };
 
 export function getDefaultSportColor(sportName: string): string {
