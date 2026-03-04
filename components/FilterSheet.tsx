@@ -100,12 +100,12 @@ export function FilterSheet({
             data-testid="filter-sheet-backdrop"
           />
 
-          {/* Sheet Container - Safe area with proper viewport handling */}
+          {/* Sheet Container - Constrained to 70% of viewport height max */}
           <div
             className="absolute bottom-0 left-0 right-0 flex flex-col bg-white rounded-t-3xl shadow-2xl animate-slide-up"
             style={{ 
-              maxHeight: 'calc(100dvh - env(safe-area-inset-top, 20px) - 20px)',
-              paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+              maxHeight: '70vh',
+              height: 'auto'
             }}
             data-testid="filter-sheet"
           >
