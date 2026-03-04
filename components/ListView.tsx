@@ -31,12 +31,12 @@ export function ListView({ fixtures, onFixtureClick }: ListViewProps) {
           key={fixture.id}
           data-testid={`list-fixture-${fixture.id}`}
           onClick={() => onFixtureClick(fixture)}
-          className="w-full text-left glass-strong rounded-2xl shadow-lg hover:shadow-xl transition-all p-5 border-2 hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full text-left glass-strong rounded-2xl shadow-lg hover:shadow-xl transition-all p-4 md:p-5 border-2 hover:scale-[1.01] active:scale-[0.99]"
           style={{
             borderColor: `${fixture.sport.color}40`,
           }}
         >
-          {/* Sport Tag */}
+          {/* Sport Tag and Status */}
           <div className="flex items-center justify-between mb-3">
             <div
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-white text-sm font-bold shadow-md"
@@ -59,27 +59,38 @@ export function ListView({ fixtures, onFixtureClick }: ListViewProps) {
             )}
           </div>
 
-          {/* Title */}
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{fixture.title}</h3>
+          {/* Title - Competition/Category */}
+          <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-3">{fixture.title}</h3>
 
-          {/* Teams */}
-          <div className="text-base text-gray-700 mb-3 font-medium">
-            {fixture.home_team} <span className="text-gray-400">vs</span> {fixture.away_team}
+          {/* Teams - PROMINENT and EASY TO READ */}
+          <div className="text-base md:text-lg font-bold text-gray-900 mb-4 leading-relaxed">
+            <span className="text-gray-900">{fixture.home_team}</span>
+            <span className="text-gray-400 font-normal mx-2">vs</span>
+            <span className="text-gray-900">{fixture.away_team}</span>
           </div>
 
-          {/* Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-400" />
-              <span>{formatDate(fixture.start_time, 'EEE, MMM d')}</span>
+          {/* Details Grid - Clear Labels and Info */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+            <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+              <Calendar className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <div>
+                <div className="text-xs text-gray-500 font-medium">Date</div>
+                <div className="font-semibold text-gray-900">{formatDate(fixture.start_time, 'EEE, MMM d')}</div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-gray-400" />
-              <span>{formatTime(fixture.start_time)}</span>
+            <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+              <Clock className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <div>
+                <div className="text-xs text-gray-500 font-medium">Time</div>
+                <div className="font-semibold text-gray-900">{formatTime(fixture.start_time)}</div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-gray-400" />
-              <span>{fixture.field}</span>
+            <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+              <MapPin className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <div>
+                <div className="text-xs text-gray-500 font-medium">Field</div>
+                <div className="font-semibold text-gray-900">{fixture.field}</div>
+              </div>
             </div>
           </div>
         </button>
