@@ -2,7 +2,7 @@
 
 import { FixtureWithSport } from '@/lib/types';
 import { formatTime, formatDate } from '@/lib/date-utils';
-import { X, Calendar, Clock, MapPin } from 'lucide-react';
+import { X, Clock, MapPin } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 
 interface DayEventsSheetProps {
@@ -13,17 +13,30 @@ interface DayEventsSheetProps {
 }
 
 export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayEventsSheetProps) {
-  const [position, setPosition] = useState({ left: '50%', transform: 'translate(-50%, -50%)' });
+  const [isMobile, setIsMobile] = useState(false);
+  const [desktopPosition, setDesktopPosition] = useState<{ left?: string; right?: string; transform: string }>({
+    left: '50%',
+    transform: 'translate(-50%, -50%)'
+  });
   const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Initial check and resize handler
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (date) {
       // Lock body scroll when modal is open
       document.body.style.overflow = 'hidden';
       
-      // Calculate smart positioning to stay within viewport
-      if (contentRef.current && window.innerWidth >= 768) {
-        setTimeout(() => {
+      // Calculate smart positioning to stay within viewport (desktop only)
+      if (contentRef.current && !isMobile) {
+        // Use requestAnimationFrame to ensure layout is calculated
+        requestAnimationFrame(() => {
           const content = contentRef.current;
           if (!content) return;
           
@@ -32,25 +45,36 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
           
           // Check if popup would go off-screen on the left
           if (rect.left < 10) {
-            setPosition({ left: '10px', transform: 'translate(0, -50%)' });
+            setDesktopPosition({ left: '10px', right: undefined, transform: 'translate(0, -50%)' });
           }
           // Check if popup would go off-screen on the right
           else if (rect.right > viewportWidth - 10) {
-            setPosition({ left: 'auto', transform: 'translate(0, -50%)' });
+            setDesktopPosition({ left: undefined, right: '10px', transform: 'translate(0, -50%)' });
+          } else {
+            setDesktopPosition({ left: '50%', right: undefined, transform: 'translate(-50%, -50%)' });
           }
-        }, 0);
+        });
       }
     } else {
       document.body.style.overflow = '';
-      setPosition({ left: '50%', transform: 'translate(-50%, -50%)' });
+      setDesktopPosition({ left: '50%', right: undefined, transform: 'translate(-50%, -50%)' });
     }
     
     return () => {
       document.body.style.overflow = '';
     };
-  }, [date]);
+  }, [date, isMobile]);
 
   if (!date) return null;
+
+  // Desktop styles applied via state
+  const desktopStyles = !isMobile ? {
+    top: '50%',
+    left: desktopPosition.left,
+    right: desktopPosition.right,
+    transform: desktopPosition.transform,
+    bottom: 'auto',
+  } : {};
 
   return (
     <div className="fixed inset-0 z-50">
@@ -58,27 +82,28 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
+        data-testid="day-events-backdrop"
       />
 
-      {/* Sheet/Card Container - Responsive with Smart Positioning */}
+      {/* Sheet/Card Container - Responsive */}
       <div
         ref={contentRef}
-        className="absolute md:top-1/2 bottom-0 md:bottom-auto left-0 md:left-auto right-0 md:right-auto
-                   flex flex-col bg-white md:rounded-2xl rounded-t-3xl shadow-2xl animate-slide-up-mobile md:animate-fade-in
-                   md:w-[90vw] md:max-w-2xl"
+        data-testid="day-events-sheet"
+        className={`absolute flex flex-col bg-white shadow-2xl
+                   ${isMobile 
+                     ? 'bottom-0 left-0 right-0 rounded-t-3xl animate-slide-up-mobile' 
+                     : 'rounded-2xl animate-fade-in w-[90vw] max-w-2xl'}`}
         style={{ 
           maxHeight: '75dvh',
-          ...(window.innerWidth >= 768 ? {
-            left: position.left,
-            right: position.left === 'auto' ? '10px' : undefined,
-            transform: position.transform
-          } : {})
+          ...desktopStyles
         }}
       >
         {/* Handle - Mobile only */}
-        <div className="md:hidden flex justify-center pt-3 pb-2 flex-shrink-0">
-          <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-        </div>
+        {isMobile && (
+          <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+          </div>
+        )}
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 flex-shrink-0 bg-gradient-to-r from-green-50 to-teal-50">
