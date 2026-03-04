@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@theme {
+  --color-rugby-light: #34D399;
+  --color-rugby: #10B981;
+  --color-rugby-dark: #059669;
+  --color-soccer-light: #FBBF24;
+  --color-soccer: #F59E0B;
+  --color-soccer-dark: #D97706;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
