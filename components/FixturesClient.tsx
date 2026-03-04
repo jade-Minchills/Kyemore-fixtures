@@ -3,16 +3,14 @@
 import { useState, useMemo } from 'react';
 import { Sport, FixtureWithSport } from '@/lib/types';
 import { getWeekDays, getCurrentWeekRange } from '@/lib/date-utils';
-import { SportFilter } from '@/components/SportFilter';
-import { SearchBar } from '@/components/SearchBar';
 import { WeeklyCalendar } from '@/components/WeeklyCalendar';
 import { UpcomingFixtures } from '@/components/UpcomingFixtures';
 import { FixtureModal } from '@/components/FixtureModal';
 import { Filters } from '@/components/Filters';
-import { ViewToggle, ViewMode } from '@/components/ViewToggle';
+import { ViewMode } from '@/components/ViewToggle';
 import { ListView } from '@/components/ListView';
 import { MonthCalendar } from '@/components/MonthCalendar';
-import { FilterSheet } from '@/components/FilterSheet';
+import { FixturesHeader } from '@/components/FixturesHeader';
 import { addWeeks, addDays, startOfMonth, endOfMonth } from 'date-fns';
 
 interface FixturesClientProps {
@@ -121,50 +119,25 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
 
   return (
     <div className="min-h-screen">
-      {/* Header - Sticky on mobile */}
-      <div className="glass-strong border-b-2 border-gray-200/50 sticky top-0 z-40 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
-          {/* Title - Smaller on mobile */}
-          <div className="mb-4 md:mb-6">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-1 md:mb-2">
-              Kylemore Sports Ground Fixtures
-            </h1>
-            <p className="text-sm md:text-lg text-gray-600">
-              See what games are happening
-            </p>
-          </div>
-
-          {/* View Toggle + Filters Row - Mobile friendly */}
-          <div className="flex items-center gap-2 mb-4">
-            <ViewToggle view={view} onViewChange={setView} />
-            <div className="md:hidden">
-              <FilterSheet
-                fields={fields}
-                selectedField={selectedField}
-                onFieldChange={setSelectedField}
-                selectedTimeOfDay={selectedTimeOfDay}
-                onTimeOfDayChange={setSelectedTimeOfDay}
-                selectedStatus={selectedStatus}
-                onStatusChange={setSelectedStatus}
-                dateRange={dateRange}
-                onDateRangeChange={setDateRange}
-              />
-            </div>
-          </div>
-
-          {/* Sport Filters - Horizontal scroll on mobile */}
-          <div className="mb-4">
-            <SportFilter
-              sports={sports}
-              selectedSports={selectedSports}
-              onToggleSport={handleToggleSport}
-            />
-          </div>
-
-          {/* Search Bar */}
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
-        </div>
-      </div>
+      {/* Header with Logo and Controls */}
+      <FixturesHeader
+        sports={sports}
+        selectedSports={selectedSports}
+        onToggleSport={handleToggleSport}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        view={view}
+        onViewChange={setView}
+        fields={fields}
+        selectedField={selectedField}
+        onFieldChange={setSelectedField}
+        selectedTimeOfDay={selectedTimeOfDay}
+        onTimeOfDayChange={setSelectedTimeOfDay}
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+      />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
