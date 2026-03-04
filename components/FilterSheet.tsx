@@ -2,6 +2,7 @@
 
 import { X, SlidersHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface FilterSheetProps {
   fields: string[];
@@ -46,10 +47,15 @@ export function FilterSheet({
   onDateRangeChange,
 }: FilterSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure we only render portal on client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
-      // Lock body scroll when modal is open
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -73,6 +79,248 @@ export function FilterSheet({
     selectedStatus.length < STATUS_OPTIONS.length ? 1 : 0,
   ].reduce((a, b) => a + b, 0);
 
+  // Bottom sheet content rendered via portal
+  const sheetContent = isOpen ? (
+    <div 
+      className="md:hidden"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+      }}
+    >
+      {/* Backdrop */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(4px)',
+        }}
+        onClick={() => setIsOpen(false)}
+        data-testid="filter-sheet-backdrop"
+      />
+
+      {/* Bottom Sheet - positioned above the bottom nav (80px) */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '80px',
+          left: 0,
+          right: 0,
+          maxHeight: 'calc(100vh - 160px)',
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: 'white',
+          borderTopLeftRadius: '24px',
+          borderTopRightRadius: '24px',
+          boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.15)',
+          animation: 'filterSlideUp 0.3s ease-out',
+        }}
+        data-testid="filter-sheet"
+      >
+        {/* Handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '12px', paddingBottom: '8px', flexShrink: 0 }}>
+          <div style={{ width: '48px', height: '6px', backgroundColor: '#D1D5DB', borderRadius: '9999px' }} />
+        </div>
+
+        {/* Header */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          padding: '16px 24px',
+          borderBottom: '1px solid #E5E7EB',
+          flexShrink: 0,
+        }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#111827' }}>Filters</h2>
+          <button
+            onClick={() => setIsOpen(false)}
+            data-testid="filter-sheet-close"
+            style={{
+              padding: '8px',
+              borderRadius: '9999px',
+              border: 'none',
+              backgroundColor: 'transparent',
+              cursor: 'pointer',
+            }}
+          >
+            <X style={{ width: '24px', height: '24px', color: '#4B5563' }} />
+          </button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* Date Range */}
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '12px' }}>
+                Date Range
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {DATE_RANGE_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    data-testid={`date-range-${option.value}`}
+                    onClick={() => onDateRangeChange(option.value)}
+                    style={{
+                      padding: '10px 16px',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: dateRange === option.value
+                        ? 'linear-gradient(to right, #10B981, #14B8A6)'
+                        : '#F3F4F6',
+                      color: dateRange === option.value ? 'white' : '#374151',
+                      boxShadow: dateRange === option.value ? '0 4px 6px rgba(0, 0, 0, 0.1)' : 'none',
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Field Filter */}
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '12px' }}>
+                Field
+              </label>
+              <select
+                data-testid="field-filter-select"
+                value={selectedField}
+                onChange={(e) => onFieldChange(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '2px solid #E5E7EB',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  backgroundColor: 'white',
+                  color: '#111827',
+                  outline: 'none',
+                }}
+              >
+                <option value="all">All Fields</option>
+                {fields.map((field) => (
+                  <option key={field} value={field}>
+                    {field}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Time of Day */}
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '12px' }}>
+                Time of Day
+              </label>
+              <select
+                data-testid="time-of-day-filter-select"
+                value={selectedTimeOfDay}
+                onChange={(e) => onTimeOfDayChange(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '2px solid #E5E7EB',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  backgroundColor: 'white',
+                  color: '#111827',
+                  outline: 'none',
+                }}
+              >
+                {TIME_OF_DAY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Status Filter */}
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '12px' }}>
+                Status
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {STATUS_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    data-testid={`status-filter-${option.value}`}
+                    onClick={() => toggleStatus(option.value)}
+                    style={{
+                      padding: '10px 16px',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: selectedStatus.includes(option.value)
+                        ? 'linear-gradient(to right, #10B981, #14B8A6)'
+                        : '#F3F4F6',
+                      color: selectedStatus.includes(option.value) ? 'white' : '#374151',
+                      boxShadow: selectedStatus.includes(option.value) ? '0 4px 6px rgba(0, 0, 0, 0.1)' : 'none',
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ 
+          flexShrink: 0, 
+          padding: '24px',
+          paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+          borderTop: '1px solid #E5E7EB',
+          backgroundColor: 'white',
+        }}>
+          <button
+            onClick={() => setIsOpen(false)}
+            style={{
+              width: '100%',
+              padding: '16px',
+              background: 'linear-gradient(to right, #10B981, #14B8A6)',
+              color: 'white',
+              fontWeight: 600,
+              fontSize: '16px',
+              borderRadius: '12px',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+            }}
+          >
+            Apply Filters
+          </button>
+        </div>
+      </div>
+
+      {/* Animation keyframes */}
+      <style>{`
+        @keyframes filterSlideUp {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+    </div>
+  ) : null;
+
   return (
     <>
       {/* Trigger Button */}
@@ -90,158 +338,8 @@ export function FilterSheet({
         )}
       </button>
 
-      {/* Bottom Sheet */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setIsOpen(false)}
-            data-testid="filter-sheet-backdrop"
-          />
-
-          {/* Sheet Container - Constrained to 70% of viewport height max */}
-          <div
-            className="absolute bottom-0 left-0 right-0 flex flex-col bg-white rounded-t-3xl shadow-2xl animate-slide-up"
-            style={{ 
-              maxHeight: '70vh',
-              height: 'auto'
-            }}
-            data-testid="filter-sheet"
-          >
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
-              <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-            </div>
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
-              <h2 className="text-xl font-bold text-gray-900">Filters</h2>
-              <button
-                onClick={() => setIsOpen(false)}
-                data-testid="filter-sheet-close"
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
-
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto overscroll-contain">
-              <div className="p-6 space-y-6">
-                {/* Date Range */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Date Range
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {DATE_RANGE_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        data-testid={`date-range-${option.value}`}
-                        onClick={() => onDateRangeChange(option.value)}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                          dateRange === option.value
-                            ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-md'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Field Filter */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Field
-                  </label>
-                  <select
-                    data-testid="field-filter-select"
-                    value={selectedField}
-                    onChange={(e) => onFieldChange(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors bg-white text-gray-900"
-                  >
-                    <option value="all">All Fields</option>
-                    {fields.map((field) => (
-                      <option key={field} value={field}>
-                        {field}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Time of Day */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Time of Day
-                  </label>
-                  <select
-                    data-testid="time-of-day-filter-select"
-                    value={selectedTimeOfDay}
-                    onChange={(e) => onTimeOfDayChange(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors bg-white text-gray-900"
-                  >
-                    {TIME_OF_DAY_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Status Filter */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Status
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {STATUS_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        data-testid={`status-filter-${option.value}`}
-                        onClick={() => toggleStatus(option.value)}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                          selectedStatus.includes(option.value)
-                            ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-md'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Fixed Footer with safe area padding */}
-            <div className="flex-shrink-0 p-6 border-t border-gray-200 bg-white" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px))' }}>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="w-full py-4 bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
-              >
-                Apply Filters
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <style jsx>{`
-        @keyframes slide-up {
-          from {
-            transform: translateY(100%);
-          }
-          to {
-            transform: translateY(0);
-          }
-        }
-        .animate-slide-up {
-          animation: slide-up 0.3s ease-out;
-        }
-      `}</style>
+      {/* Portal-rendered bottom sheet */}
+      {mounted && sheetContent && createPortal(sheetContent, document.body)}
     </>
   );
 }
