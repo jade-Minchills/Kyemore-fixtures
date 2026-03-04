@@ -9,6 +9,10 @@ import { WeeklyCalendar } from '@/components/WeeklyCalendar';
 import { UpcomingFixtures } from '@/components/UpcomingFixtures';
 import { FixtureModal } from '@/components/FixtureModal';
 import { Filters } from '@/components/Filters';
+import { ViewToggle, ViewMode } from '@/components/ViewToggle';
+import { ListView } from '@/components/ListView';
+import { MonthCalendar } from '@/components/MonthCalendar';
+import { FilterSheet } from '@/components/FilterSheet';
 import { addWeeks, addDays, startOfMonth, endOfMonth } from 'date-fns';
 
 interface FixturesClientProps {
@@ -24,6 +28,7 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
   const [selectedField, setSelectedField] = useState('all');
   const [selectedTimeOfDay, setSelectedTimeOfDay] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState<string[]>(['scheduled']);
+  const [view, setView] = useState<ViewMode>('list'); // Default to list for mobile-first
 
   // Get date range based on selection
   const { start: weekStart, end: weekEnd } = useMemo(() => {
@@ -115,20 +120,39 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-teal-50">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b-2 border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="mb-6">
-            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-2">
+    <div className="min-h-screen">
+      {/* Header - Sticky on mobile */}
+      <div className="glass-strong border-b-2 border-gray-200/50 sticky top-0 z-40 shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
+          {/* Title - Smaller on mobile */}
+          <div className="mb-4 md:mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-1 md:mb-2">
               Kylemore Sports Ground Fixtures
             </h1>
-            <p className="text-lg text-gray-600">
-              See what games are happening this week
+            <p className="text-sm md:text-lg text-gray-600">
+              See what games are happening
             </p>
           </div>
 
-          {/* Sport Filters */}
+          {/* View Toggle + Filters Row - Mobile friendly */}
+          <div className="flex items-center gap-2 mb-4">
+            <ViewToggle view={view} onViewChange={setView} />
+            <div className="md:hidden">
+              <FilterSheet
+                fields={fields}
+                selectedField={selectedField}
+                onFieldChange={setSelectedField}
+                selectedTimeOfDay={selectedTimeOfDay}
+                onTimeOfDayChange={setSelectedTimeOfDay}
+                selectedStatus={selectedStatus}
+                onStatusChange={setSelectedStatus}
+                dateRange={dateRange}
+                onDateRangeChange={setDateRange}
+              />
+            </div>
+          </div>
+
+          {/* Sport Filters - Horizontal scroll on mobile */}
           <div className="mb-4">
             <SportFilter
               sports={sports}
@@ -143,84 +167,54 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Calendar + Filters */}
+          {/* Left Column: Main View */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Filters */}
-            <Filters
-              fields={fields}
-              selectedField={selectedField}
-              onFieldChange={setSelectedField}
-              selectedTimeOfDay={selectedTimeOfDay}
-              onTimeOfDayChange={setSelectedTimeOfDay}
-              selectedStatus={selectedStatus}
-              onStatusChange={setSelectedStatus}
-              dateRange={dateRange}
-              onDateRangeChange={setDateRange}
-            />
+            {/* Desktop Filters */}
+            <div className="hidden md:block">
+              <Filters
+                fields={fields}
+                selectedField={selectedField}
+                onFieldChange={setSelectedField}
+                selectedTimeOfDay={selectedTimeOfDay}
+                onTimeOfDayChange={setSelectedTimeOfDay}
+                selectedStatus={selectedStatus}
+                onStatusChange={setSelectedStatus}
+                dateRange={dateRange}
+                onDateRangeChange={setDateRange}
+              />
+            </div>
 
-            {/* Calendar */}
-            {dateRange !== 'this-month' ? (
-              <WeeklyCalendar
-                weekDays={weekDays}
+            {/* View Content */}
+            {view === 'list' && (
+              <ListView
                 fixtures={filteredFixtures}
                 onFixtureClick={setSelectedFixture}
               />
-            ) : (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Monthly View</h3>
-                <div className="space-y-3">
-                  {filteredFixtures
-                    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
-                    .map(fixture => (
-                      <button
-                        key={fixture.id}
-                        data-testid={`list-fixture-${fixture.id}`}
-                        onClick={() => setSelectedFixture(fixture)}
-                        className="w-full text-left p-4 rounded-lg border-2 hover:shadow-md transition-all"
-                        style={{
-                          borderColor: fixture.sport.color,
-                          backgroundColor: `${fixture.sport.color}10`,
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-bold text-lg text-gray-900 mb-1">{fixture.title}</div>
-                            <div className="text-gray-700">
-                              {fixture.home_team} vs {fixture.away_team}
-                            </div>
-                            <div className="text-sm text-gray-600 mt-2">
-                              {new Date(fixture.start_time).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: 'numeric',
-                                minute: '2-digit',
-                              })} • {fixture.field}
-                            </div>
-                          </div>
-                          <div
-                            className="px-3 py-1 rounded-full text-white text-sm font-medium"
-                            style={{ backgroundColor: fixture.sport.color }}
-                          >
-                            {fixture.sport.name}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  {filteredFixtures.length === 0 && (
-                    <div className="text-center py-12 text-gray-500">
-                      No fixtures found for this month
-                    </div>
-                  )}
-                </div>
+            )}
+
+            {view === 'week' && (
+              <div className="overflow-x-auto">
+                <WeeklyCalendar
+                  weekDays={weekDays}
+                  fixtures={filteredFixtures}
+                  onFixtureClick={setSelectedFixture}
+                />
               </div>
+            )}
+
+            {view === 'month' && (
+              <MonthCalendar
+                fixtures={filteredFixtures}
+                onFixtureClick={setSelectedFixture}
+                initialDate={weekStart}
+              />
             )}
           </div>
 
-          {/* Right Column: Upcoming Fixtures */}
-          <div className="lg:col-span-1">
+          {/* Right Column: Upcoming Fixtures - Hidden on mobile when in list view */}
+          <div className={`lg:col-span-1 ${view === 'list' ? 'hidden lg:block' : 'hidden lg:block'}`}>
             <UpcomingFixtures
               fixtures={filteredFixtures}
               onFixtureClick={setSelectedFixture}
