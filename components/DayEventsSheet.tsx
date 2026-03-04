@@ -28,31 +28,34 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
   if (!date) return null;
 
   return (
-    <div className="fixed inset-0 z-50 md:hidden">
+    <div className="fixed inset-0 z-50">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Sheet Container */}
+      {/* Sheet/Card Container - Responsive */}
       <div
-        className="absolute bottom-0 left-0 right-0 flex flex-col bg-white rounded-t-3xl shadow-2xl animate-slide-up"
+        className="absolute md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 
+                   bottom-0 md:bottom-auto left-0 md:left-auto right-0 md:right-auto
+                   flex flex-col bg-white md:rounded-2xl rounded-t-3xl shadow-2xl animate-slide-up
+                   md:w-[90vw] md:max-w-2xl"
         style={{ maxHeight: '75dvh' }}
       >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
+        {/* Handle - Mobile only */}
+        <div className="md:hidden flex justify-center pt-3 pb-2 flex-shrink-0">
           <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-lg font-bold text-gray-900">
+        <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 flex-shrink-0 bg-gradient-to-r from-green-50 to-teal-50">
+          <h2 className="text-base md:text-lg font-bold text-gray-900">
             {formatDate(date.toISOString(), 'EEEE, MMMM d')}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-white/80 rounded-full transition-colors"
           >
             <X className="w-5 h-5 text-gray-600" />
           </button>
@@ -66,20 +69,22 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
               <p className="text-lg">No fixtures scheduled</p>
             </div>
           ) : (
-            <div className="p-4 space-y-3">
-              {fixtures.map((fixture) => (
+            <div className="p-4 md:p-6 space-y-3">
+              {fixtures
+                .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+                .map((fixture) => (
                 <button
                   key={fixture.id}
                   onClick={() => {
                     onFixtureClick(fixture);
                     onClose();
                   }}
-                  className="w-full text-left glass-strong rounded-2xl shadow-lg hover:shadow-xl transition-all p-5 border-2 active:scale-[0.98]"
+                  className="w-full text-left glass-strong rounded-2xl shadow-lg hover:shadow-xl transition-all p-4 md:p-5 border-2 active:scale-[0.98]"
                   style={{
                     borderColor: `${fixture.sport.color}40`,
                   }}
                 >
-                  {/* Sport Tag */}
+                  {/* Sport Tag and Status */}
                   <div className="flex items-center justify-between mb-3">
                     <div
                       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-white text-sm font-bold shadow-md"
@@ -103,22 +108,22 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{fixture.title}</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">{fixture.title}</h3>
 
-                  {/* Teams */}
-                  <div className="text-base text-gray-700 mb-3 font-medium">
-                    {fixture.home_team} <span className="text-gray-400">vs</span> {fixture.away_team}
+                  {/* Teams - Prominent and Easy to Read */}
+                  <div className="text-base md:text-lg text-gray-900 mb-3 font-semibold">
+                    {fixture.home_team} <span className="text-gray-400 font-normal">vs</span> {fixture.away_team}
                   </div>
 
-                  {/* Details */}
-                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                  {/* Details Grid - Clear and Readable */}
+                  <div className="grid grid-cols-2 gap-3 text-sm text-gray-700">
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-400" />
-                      <span>{formatTime(fixture.start_time)}</span>
+                      <Clock className="w-4 h-4 text-gray-500" />
+                      <span className="font-medium">{formatTime(fixture.start_time)}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
-                      <span>{fixture.field}</span>
+                      <MapPin className="w-4 h-4 text-gray-500" />
+                      <span className="font-medium">{fixture.field}</span>
                     </div>
                   </div>
                 </button>
@@ -135,6 +140,18 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
           }
           to {
             transform: translateY(0);
+          }
+        }
+        @media (min-width: 768px) {
+          @keyframes slide-up {
+            from {
+              opacity: 0;
+              transform: translate(-50%, -48%);
+            }
+            to {
+              opacity: 1;
+              transform: translate(-50%, -50%);
+            }
           }
         }
         .animate-slide-up {
