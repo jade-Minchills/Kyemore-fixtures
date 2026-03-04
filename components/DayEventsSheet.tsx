@@ -3,7 +3,7 @@
 import { FixtureWithSport } from '@/lib/types';
 import { formatTime, formatDate } from '@/lib/date-utils';
 import { X, Calendar, Clock, MapPin } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface DayEventsSheetProps {
   date: Date | null;
@@ -13,13 +13,38 @@ interface DayEventsSheetProps {
 }
 
 export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayEventsSheetProps) {
+  const [position, setPosition] = useState({ left: '50%', transform: 'translate(-50%, -50%)' });
+  const contentRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (date) {
       // Lock body scroll when modal is open
       document.body.style.overflow = 'hidden';
+      
+      // Calculate smart positioning to stay within viewport
+      if (contentRef.current && window.innerWidth >= 768) {
+        setTimeout(() => {
+          const content = contentRef.current;
+          if (!content) return;
+          
+          const rect = content.getBoundingClientRect();
+          const viewportWidth = window.innerWidth;
+          
+          // Check if popup would go off-screen on the left
+          if (rect.left < 10) {
+            setPosition({ left: '10px', transform: 'translate(0, -50%)' });
+          }
+          // Check if popup would go off-screen on the right
+          else if (rect.right > viewportWidth - 10) {
+            setPosition({ left: 'auto', transform: 'translate(0, -50%)' });
+          }
+        }, 0);
+      }
     } else {
       document.body.style.overflow = '';
+      setPosition({ left: '50%', transform: 'translate(-50%, -50%)' });
     }
+    
     return () => {
       document.body.style.overflow = '';
     };
@@ -35,13 +60,20 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
         onClick={onClose}
       />
 
-      {/* Sheet/Card Container - Responsive */}
+      {/* Sheet/Card Container - Responsive with Smart Positioning */}
       <div
-        className="absolute md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 
-                   bottom-0 md:bottom-auto left-0 md:left-auto right-0 md:right-auto
+        ref={contentRef}
+        className="absolute md:top-1/2 bottom-0 md:bottom-auto left-0 md:left-auto right-0 md:right-auto
                    flex flex-col bg-white md:rounded-2xl rounded-t-3xl shadow-2xl animate-slide-up-mobile md:animate-fade-in
                    md:w-[90vw] md:max-w-2xl"
-        style={{ maxHeight: '75dvh' }}
+        style={{ 
+          maxHeight: '75dvh',
+          ...(window.innerWidth >= 768 ? {
+            left: position.left,
+            right: position.left === 'auto' ? '10px' : undefined,
+            transform: position.transform
+          } : {})
+        }}
       >
         {/* Handle - Mobile only */}
         <div className="md:hidden flex justify-center pt-3 pb-2 flex-shrink-0">
