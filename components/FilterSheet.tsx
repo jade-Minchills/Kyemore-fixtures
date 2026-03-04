@@ -100,10 +100,13 @@ export function FilterSheet({
             data-testid="filter-sheet-backdrop"
           />
 
-          {/* Sheet Container */}
+          {/* Sheet Container - Safe area with proper viewport handling */}
           <div
             className="absolute bottom-0 left-0 right-0 flex flex-col bg-white rounded-t-3xl shadow-2xl animate-slide-up"
-            style={{ maxHeight: '85dvh' }}
+            style={{ 
+              maxHeight: 'calc(100dvh - env(safe-area-inset-top, 20px) - 20px)',
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+            }}
             data-testid="filter-sheet"
           >
             {/* Handle */}
