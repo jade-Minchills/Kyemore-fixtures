@@ -101,6 +101,12 @@ export default function AdminUploadPage() {
     setImporting(true);
     setError('');
 
+    if (!supabase) {
+      setError('Supabase is not configured. Running in demo mode.');
+      setImporting(false);
+      return;
+    }
+
     try {
       // Filter out rows with errors
       const validFixtures = parsedData.filter(f => f.errors.length === 0);
