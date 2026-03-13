@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Upload, FileSpreadsheet, AlertTriangle, CheckCircle, LogOut, X } from 'lucide-react';
+import { Upload, FileSpreadsheet, AlertTriangle, CheckCircle, LogOut, X, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { ParsedFixture, ClashDetection, UploadRow } from '@/lib/types';
 import { detectClashes, generateSlug, getDefaultSportColor } from '@/lib/date-utils';
