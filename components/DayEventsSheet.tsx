@@ -15,9 +15,14 @@ interface DayEventsSheetProps {
 
 export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayEventsSheetProps) {
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(true); // Default to mobile for SSR
 
   useEffect(() => {
     setMounted(true);
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
@@ -63,31 +68,31 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
         data-testid="day-events-backdrop"
       />
 
-      {/* Bottom Sheet - above bottom nav on mobile */}
+      {/* Bottom Sheet */}
       <div
         style={{
           position: 'absolute',
-          bottom: window.innerWidth < 768 ? '80px' : '50%',
-          left: window.innerWidth < 768 ? 0 : '50%',
-          right: window.innerWidth < 768 ? 0 : 'auto',
-          transform: window.innerWidth < 768 ? 'none' : 'translate(-50%, 50%)',
-          width: window.innerWidth < 768 ? '100%' : '90vw',
-          maxWidth: window.innerWidth < 768 ? '100%' : '640px',
-          maxHeight: window.innerWidth < 768 ? 'calc(100vh - 160px)' : '75vh',
+          bottom: isMobile ? '80px' : '50%',
+          left: isMobile ? 0 : '50%',
+          right: isMobile ? 0 : 'auto',
+          transform: isMobile ? 'none' : 'translate(-50%, 50%)',
+          width: isMobile ? '100%' : '90vw',
+          maxWidth: isMobile ? '100%' : '640px',
+          maxHeight: isMobile ? 'calc(100vh - 160px)' : '75vh',
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: 'white',
           borderTopLeftRadius: '24px',
           borderTopRightRadius: '24px',
-          borderBottomLeftRadius: window.innerWidth < 768 ? 0 : '24px',
-          borderBottomRightRadius: window.innerWidth < 768 ? 0 : '24px',
+          borderBottomLeftRadius: isMobile ? 0 : '24px',
+          borderBottomRightRadius: isMobile ? 0 : '24px',
           boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.15)',
           overflow: 'hidden',
         }}
         data-testid="day-events-sheet"
       >
         {/* Handle - mobile only */}
-        {window.innerWidth < 768 && (
+        {isMobile && (
           <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '12px', paddingBottom: '8px', flexShrink: 0 }}>
             <div style={{ width: '48px', height: '6px', backgroundColor: '#D1D5DB', borderRadius: '9999px' }} />
           </div>
@@ -184,7 +189,7 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
                   </div>
 
                   {/* Title */}
-                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', marginBottom: '8px', margin: '0 0 8px 0' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 8px 0' }}>
                     {fixture.title}
                   </h3>
 
