@@ -62,12 +62,19 @@ export function ListView({ fixtures, onFixtureClick }: ListViewProps) {
           {/* Title - Competition/Category */}
           <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-3">{fixture.title}</h3>
 
-          {/* Teams - PROMINENT and EASY TO READ */}
-          <div className="text-base md:text-lg font-bold text-gray-900 mb-4 leading-relaxed">
-            <span className="text-gray-900">{fixture.home_team}</span>
-            <span className="text-gray-400 font-normal mx-2">vs</span>
-            <span className="text-gray-900">{fixture.away_team}</span>
-          </div>
+          {/* Teams - Only show for sports matches, not events */}
+          {fixture.sport.slug !== 'events' && fixture.home_team && fixture.away_team && (
+            <div className="text-base md:text-lg font-bold text-gray-900 mb-4 leading-relaxed">
+              <span className="text-gray-900">{fixture.home_team}</span>
+              <span className="text-gray-400 font-normal mx-2">vs</span>
+              <span className="text-gray-900">{fixture.away_team}</span>
+            </div>
+          )}
+
+          {/* Description for Events */}
+          {fixture.sport.slug === 'events' && fixture.notes && (
+            <p className="text-base text-gray-600 mb-4 leading-relaxed">{fixture.notes}</p>
+          )}
 
           {/* Details Grid - Clear Labels and Info */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
