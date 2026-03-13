@@ -193,10 +193,19 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
                     {fixture.title}
                   </h3>
 
-                  {/* Teams */}
-                  <div style={{ fontSize: '16px', color: '#111827', marginBottom: '12px', fontWeight: 600 }}>
-                    {fixture.home_team} <span style={{ color: '#9CA3AF', fontWeight: 400 }}>vs</span> {fixture.away_team}
-                  </div>
+                  {/* Teams - Only show for sports matches, not events */}
+                  {fixture.sport.slug !== 'events' && fixture.home_team && fixture.away_team && (
+                    <div style={{ fontSize: '16px', color: '#111827', marginBottom: '12px', fontWeight: 600 }}>
+                      {fixture.home_team} <span style={{ color: '#9CA3AF', fontWeight: 400 }}>vs</span> {fixture.away_team}
+                    </div>
+                  )}
+
+                  {/* Description for Events */}
+                  {fixture.sport.slug === 'events' && fixture.notes && (
+                    <p style={{ fontSize: '14px', color: '#4B5563', marginBottom: '12px', lineHeight: 1.5 }}>
+                      {fixture.notes}
+                    </p>
+                  )}
 
                   {/* Details */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '14px', color: '#374151' }}>
