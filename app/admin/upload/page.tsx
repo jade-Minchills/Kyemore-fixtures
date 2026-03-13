@@ -29,11 +29,17 @@ export default function AdminUploadPage() {
 
   const validateRow = (row: UploadRow, index: number): ParsedFixture => {
     const errors: string[] = [];
+    const isEvent = row.sport?.toLowerCase().trim() === 'events';
 
     if (!row.sport || row.sport.trim() === '') errors.push('Sport is required');
     if (!row.title || row.title.trim() === '') errors.push('Title is required');
-    if (!row.home_team || row.home_team.trim() === '') errors.push('Home team is required');
-    if (!row.away_team || row.away_team.trim() === '') errors.push('Away team is required');
+    
+    // Home team and away team are only required for non-Events
+    if (!isEvent) {
+      if (!row.home_team || row.home_team.trim() === '') errors.push('Home team is required');
+      if (!row.away_team || row.away_team.trim() === '') errors.push('Away team is required');
+    }
+    
     if (!row.date || row.date.trim() === '') errors.push('Date is required');
     if (!row.start_time || row.start_time.trim() === '') errors.push('Start time is required');
     if (!row.end_time || row.end_time.trim() === '') errors.push('End time is required');
