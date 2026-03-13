@@ -85,23 +85,25 @@ export function FixtureModal({ fixture, onClose }: FixtureModalProps) {
             </div>
           </div>
 
-          {/* Teams */}
-          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-            <Users className="w-5 h-5 text-gray-600 mt-0.5" />
-            <div className="flex-1">
-              <div className="text-sm text-gray-600 font-medium mb-2">Teams</div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-gray-500 mb-1">Home</div>
-                  <div className="font-semibold text-gray-900">{fixture.home_team}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-500 mb-1">Away</div>
-                  <div className="font-semibold text-gray-900">{fixture.away_team}</div>
+          {/* Teams - Only show for sports, not events */}
+          {fixture.sport.slug !== 'events' && fixture.home_team && fixture.away_team && (
+            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+              <Users className="w-5 h-5 text-gray-600 mt-0.5" />
+              <div className="flex-1">
+                <div className="text-sm text-gray-600 font-medium mb-2">Teams</div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Home</div>
+                    <div className="font-semibold text-gray-900">{fixture.home_team}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Away</div>
+                    <div className="font-semibold text-gray-900">{fixture.away_team}</div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Status */}
           <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
