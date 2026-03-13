@@ -461,7 +461,10 @@ export default function AdminUploadPage() {
                       <td className="px-4 py-3 text-sm text-gray-900">{row.sport}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{row.title}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">
-                        {row.home_team} vs {row.away_team}
+                        {row.home_team && row.away_team 
+                          ? `${row.home_team} vs ${row.away_team}`
+                          : <span className="text-gray-400 italic">N/A (Event)</span>
+                        }
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{row.date}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">
