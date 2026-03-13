@@ -205,6 +205,82 @@ export default function AdminUploadPage() {
 
   const hasErrors = parsedData.some(f => f.errors.length > 0);
 
+  const downloadTemplate = () => {
+    // Create sample data for the template
+    const today = new Date();
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
+    
+    const formatDateForTemplate = (date: Date) => {
+      return date.toISOString().split('T')[0];
+    };
+
+    const templateData = [
+      {
+        sport: 'Rugby',
+        title: 'U18 League Match',
+        home_team: 'Kylemore RFC',
+        away_team: 'Visiting RFC',
+        date: formatDateForTemplate(today),
+        start_time: '10:00',
+        end_time: '11:30',
+        field: 'Field 1',
+        location_name: 'Kylemore Sports Ground',
+        status: 'scheduled',
+        notes: ''
+      },
+      {
+        sport: 'Soccer',
+        title: 'Senior Cup Quarter Final',
+        home_team: 'Kylemore FC',
+        away_team: 'Away FC',
+        date: formatDateForTemplate(today),
+        start_time: '14:00',
+        end_time: '15:30',
+        field: 'Field 2',
+        location_name: 'Kylemore Sports Ground',
+        status: 'scheduled',
+        notes: ''
+      },
+      {
+        sport: 'Events',
+        title: 'Club Awards Night',
+        home_team: '',
+        away_team: '',
+        date: formatDateForTemplate(nextWeek),
+        start_time: '19:00',
+        end_time: '22:00',
+        field: 'Clubhouse',
+        location_name: 'Kylemore Sports Ground',
+        status: 'scheduled',
+        notes: 'End of season awards ceremony and dinner'
+      },
+    ];
+
+    // Create workbook and worksheet
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Fixtures');
+
+    // Set column widths for better readability
+    ws['!cols'] = [
+      { wch: 10 },  // sport
+      { wch: 25 },  // title
+      { wch: 20 },  // home_team
+      { wch: 20 },  // away_team
+      { wch: 12 },  // date
+      { wch: 10 },  // start_time
+      { wch: 10 },  // end_time
+      { wch: 12 },  // field
+      { wch: 25 },  // location_name
+      { wch: 10 },  // status
+      { wch: 40 },  // notes
+    ];
+
+    // Download the file
+    XLSX.writeFile(wb, 'fixtures_template.xlsx');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-teal-50">
       {/* Header */}
