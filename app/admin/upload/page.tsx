@@ -350,19 +350,29 @@ export default function AdminUploadPage() {
           </div>
 
           {/* Instructions */}
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-4">
             <h3 className="font-semibold text-blue-900 mb-2">Required Columns:</h3>
             <div className="text-sm text-blue-800 space-y-1">
-              <p><code className="bg-blue-100 px-1 rounded">sport</code> - Sport name (e.g., Rugby, Soccer)</p>
+              <p><code className="bg-blue-100 px-1 rounded">sport</code> - Sport name (e.g., Rugby, Soccer, Events)</p>
               <p><code className="bg-blue-100 px-1 rounded">title</code> - Fixture title (e.g., U18 Rugby)</p>
-              <p><code className="bg-blue-100 px-1 rounded">home_team</code> - Home team name</p>
-              <p><code className="bg-blue-100 px-1 rounded">away_team</code> - Away team name</p>
+              <p><code className="bg-blue-100 px-1 rounded">home_team</code> - Home team name (leave empty for Events)</p>
+              <p><code className="bg-blue-100 px-1 rounded">away_team</code> - Away team name (leave empty for Events)</p>
               <p><code className="bg-blue-100 px-1 rounded">date</code> - Date in YYYY-MM-DD format</p>
               <p><code className="bg-blue-100 px-1 rounded">start_time</code> - Start time in HH:MM format</p>
               <p><code className="bg-blue-100 px-1 rounded">end_time</code> - End time in HH:MM format</p>
-              <p><code className="bg-blue-100 px-1 rounded">field</code> - Field name (e.g., Field 1)</p>
+              <p><code className="bg-blue-100 px-1 rounded">field</code> - Field name (e.g., Field 1, Clubhouse)</p>
             </div>
           </div>
+
+          {/* Download Template Button */}
+          <button
+            onClick={downloadTemplate}
+            data-testid="download-template-button"
+            className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold rounded-lg hover:from-green-600 hover:to-teal-600 shadow-md hover:shadow-lg transition-all"
+          >
+            <Download className="w-5 h-5" />
+            Download Template (XLSX)
+          </button>
         </div>
 
         {/* Success Message */}
