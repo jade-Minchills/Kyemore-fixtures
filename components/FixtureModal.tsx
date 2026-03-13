@@ -38,11 +38,14 @@ export function FixtureModal({ fixture, onClose }: FixtureModalProps) {
           <div className="pr-12">
             <div className="text-sm font-semibold mb-2 opacity-90">{fixture.sport.name}</div>
             <h2 className="text-3xl font-bold mb-2">{fixture.title}</h2>
-            <div className="flex items-center gap-2 text-lg">
-              <span className="font-semibold">{fixture.home_team}</span>
-              <span className="opacity-75">vs</span>
-              <span className="font-semibold">{fixture.away_team}</span>
-            </div>
+            {/* Only show teams for sports, not events */}
+            {fixture.sport.slug !== 'events' && fixture.home_team && fixture.away_team && (
+              <div className="flex items-center gap-2 text-lg">
+                <span className="font-semibold">{fixture.home_team}</span>
+                <span className="opacity-75">vs</span>
+                <span className="font-semibold">{fixture.away_team}</span>
+              </div>
+            )}
           </div>
         </div>
 
