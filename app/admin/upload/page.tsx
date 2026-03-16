@@ -230,7 +230,7 @@ export default function AdminUploadPage() {
         date: formatDateForTemplate(today),
         start_time: '10:00',
         end_time: '11:30',
-        field: 'Field 1',
+        field: 'Rugby Field',
         location_name: 'Kylemore Sports Ground',
         status: 'scheduled',
         notes: ''
@@ -243,7 +243,7 @@ export default function AdminUploadPage() {
         date: formatDateForTemplate(today),
         start_time: '14:00',
         end_time: '15:30',
-        field: 'Field 2',
+        field: 'Soccer Field',
         location_name: 'Kylemore Sports Ground',
         status: 'scheduled',
         notes: ''
