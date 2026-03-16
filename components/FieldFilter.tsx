@@ -16,16 +16,15 @@ interface FieldFilterProps {
 
 export function FieldFilter({ selectedFields, onToggleField }: FieldFilterProps) {
   return (
-    <div className="overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
-      <div className="flex gap-3 min-w-max md:flex-wrap">
-        {STANDARD_FIELDS.map((field) => {
+    <div className="flex flex-wrap gap-2">
+      {STANDARD_FIELDS.map((field) => {
           const isSelected = selectedFields.includes(field.name);
           return (
             <button
               key={field.id}
               onClick={() => onToggleField(field.name)}
               data-testid={`field-filter-${field.id}`}
-              className="px-5 py-2.5 rounded-full font-semibold transition-all flex items-center gap-2 shadow-md hover:shadow-lg whitespace-nowrap"
+              className="px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 shadow-md hover:shadow-lg whitespace-nowrap"
               style={{
                 background: isSelected 
                   ? `linear-gradient(135deg, ${field.color} 0%, ${field.color}dd 100%)`
@@ -35,12 +34,11 @@ export function FieldFilter({ selectedFields, onToggleField }: FieldFilterProps)
                 backdropFilter: 'blur(8px)',
               }}
             >
-              {isSelected && <Check className="w-4 h-4" />}
+              {isSelected && <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
               {field.name}
             </button>
           );
         })}
-      </div>
     </div>
   );
 }
