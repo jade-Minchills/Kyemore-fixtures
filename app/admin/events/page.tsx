@@ -15,10 +15,22 @@ import {
   MapPin,
   CalendarPlus,
 } from 'lucide-react';
-import { Event } from '@/lib/types';
+import { Event, FixtureWithSport } from '@/lib/types';
 
 const VENUES = ['Rugby Field', 'Soccer Field', 'Clubhouse'] as const;
 const STATUSES = ['scheduled', 'postponed', 'cancelled'] as const;
+
+// Unified row shown in the list — can come from either table
+interface EventRow {
+  id: string;
+  title: string;
+  description: string | null;
+  venue: string;
+  start: string;
+  end: string;
+  status: string;
+  source: 'manual' | 'csv'; // which table to delete from
+}
 
 function formatDisplayDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-IE', {
@@ -37,7 +49,7 @@ function formatDisplayTime(iso: string) {
 }
 
 export default function AdminEventsPage() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [rows, setRows] = useState<EventRow[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -56,19 +68,57 @@ export default function AdminEventsPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  const fetchEvents = useCallback(async () => {
+  const fetchAllEvents = useCallback(async () => {
     if (!supabase) return;
-    const { data, error: fetchError } = await supabase
+
+    // Fetch from the manual events table
+    const { data: manualEvents } = await supabase
       .from('events')
       .select('*')
       .order('start_datetime');
-    if (!fetchError) setEvents((data as Event[]) ?? []);
+
+    // Fetch fixtures where sport slug = 'events'
+    const { data: fixtureEvents } = await supabase
+      .from('fixtures')
+      .select('*, sport:sports(*)')
+      .order('start_time');
+
+    const manualRows: EventRow[] = ((manualEvents as Event[]) ?? []).map(e => ({
+      id: e.id,
+      title: e.title,
+      description: e.description,
+      venue: e.venue,
+      start: e.start_datetime,
+      end: e.end_datetime,
+      status: e.status,
+      source: 'manual',
+    }));
+
+    const csvRows: EventRow[] = ((fixtureEvents as FixtureWithSport[]) ?? [])
+      .filter(f => f.sport?.slug === 'events')
+      .map(f => ({
+        id: f.id,
+        title: f.title,
+        description: f.notes,
+        venue: f.field ?? '',
+        start: f.start_time,
+        end: f.end_time,
+        status: f.status,
+        source: 'csv',
+      }));
+
+    // Merge and sort by start date
+    const combined = [...manualRows, ...csvRows].sort(
+      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+    );
+
+    setRows(combined);
     setLoadingEvents(false);
   }, [supabase]);
 
   useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+    fetchAllEvents();
+  }, [fetchAllEvents]);
 
   const handleLogout = async () => {
     if (supabase) await supabase.auth.signOut();
@@ -121,7 +171,7 @@ export default function AdminEventsPage() {
 
       setSuccess(`"${title}" has been added.`);
       resetForm();
-      await fetchEvents();
+      await fetchAllEvents();
     } catch {
       setError('An unexpected error occurred.');
     } finally {
@@ -129,22 +179,35 @@ export default function AdminEventsPage() {
     }
   };
 
-  const handleDelete = async (id: string, eventTitle: string) => {
-    if (!confirm(`Delete "${eventTitle}"? This cannot be undone.`)) return;
-    setDeletingId(id);
+  const handleDelete = async (row: EventRow) => {
+    if (!confirm(`Delete "${row.title}"? This cannot be undone.`)) return;
+    setDeletingId(row.id);
     setError('');
     setSuccess('');
 
     try {
-      const res = await fetch(`/api/events/${id}`, { method: 'DELETE' });
-      const json = await res.json();
-      if (!res.ok) {
-        setError(json.error ?? 'Failed to delete event.');
-        setDeletingId(null);
-        return;
+      if (row.source === 'manual') {
+        // Delete via the API route (server-side auth check)
+        const res = await fetch(`/api/events/${row.id}`, { method: 'DELETE' });
+        const json = await res.json();
+        if (!res.ok) {
+          setError(json.error ?? 'Failed to delete event.');
+          setDeletingId(null);
+          return;
+        }
+      } else {
+        // Delete from fixtures table directly (RLS allows authenticated users)
+        if (!supabase) { setError('Not connected.'); setDeletingId(null); return; }
+        const { error: deleteError } = await supabase.from('fixtures').delete().eq('id', row.id);
+        if (deleteError) {
+          setError(`Failed to delete: ${deleteError.message}`);
+          setDeletingId(null);
+          return;
+        }
       }
-      setSuccess(`"${eventTitle}" has been deleted.`);
-      setEvents(prev => prev.filter(ev => ev.id !== id));
+
+      setSuccess(`"${row.title}" has been deleted.`);
+      setRows(prev => prev.filter(r => r.id !== row.id));
     } catch {
       setError('An unexpected error occurred.');
     } finally {
@@ -331,64 +394,73 @@ export default function AdminEventsPage() {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="p-6 border-b-2 border-gray-200">
             <h2 className="text-xl font-bold text-gray-900">
-              Existing Events
+              All Events
               {!loadingEvents && (
-                <span className="ml-2 text-sm font-normal text-gray-500">({events.length})</span>
+                <span className="ml-2 text-sm font-normal text-gray-500">({rows.length})</span>
               )}
             </h2>
+            <p className="text-sm text-gray-500 mt-1">Includes manually added events and CSV-imported events</p>
           </div>
 
           {loadingEvents ? (
             <div className="p-12 text-center text-gray-500">Loading events…</div>
-          ) : events.length === 0 ? (
+          ) : rows.length === 0 ? (
             <div className="p-12 text-center">
               <div className="text-5xl mb-4">📅</div>
               <p className="text-gray-500">No events yet. Add one above.</p>
             </div>
           ) : (
             <ul className="divide-y divide-gray-100">
-              {events.map(event => (
-                <li key={event.id} className="flex items-start gap-4 px-6 py-5 hover:bg-gray-50 transition-colors">
-                  {/* Colour dot */}
+              {rows.map(row => (
+                <li key={`${row.source}-${row.id}`} className="flex items-start gap-4 px-6 py-5 hover:bg-gray-50 transition-colors">
                   <div className="mt-1 w-3 h-3 rounded-full flex-shrink-0 bg-purple-500" />
 
-                  {/* Details */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-base font-bold text-gray-900">{event.title}</span>
-                      {event.status !== 'scheduled' && (
+                      <span className="text-base font-bold text-gray-900">{row.title}</span>
+                      {/* Source badge */}
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        row.source === 'csv'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-purple-100 text-purple-700'
+                      }`}>
+                        {row.source === 'csv' ? 'CSV' : 'Manual'}
+                      </span>
+                      {row.status !== 'scheduled' && (
                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                          event.status === 'postponed'
+                          row.status === 'postponed'
                             ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-red-100 text-red-800'
                         }`}>
-                          {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                          {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
                         </span>
                       )}
                     </div>
-                    {event.description && (
-                      <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{event.description}</p>
+                    {row.description && (
+                      <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{row.description}</p>
                     )}
                     <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-600">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4 text-gray-400" />
-                        {formatDisplayDate(event.start_datetime)}
+                        {formatDisplayDate(row.start)}
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-4 h-4 text-gray-400" />
-                        {formatDisplayTime(event.start_datetime)} – {formatDisplayTime(event.end_datetime)}
+                        {formatDisplayTime(row.start)} – {formatDisplayTime(row.end)}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        {event.venue}
-                      </span>
+                      {row.venue && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          {row.venue}
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   {/* Delete */}
                   <button
-                    onClick={() => handleDelete(event.id, event.title)}
-                    disabled={deletingId === event.id}
+                    onClick={() => handleDelete(row)}
+                    disabled={deletingId === row.id}
                     title="Delete event"
                     className="flex-shrink-0 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
