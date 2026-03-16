@@ -166,6 +166,9 @@ export default function AdminEventsPage() {
               <a href="/admin/upload" className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors">
                 CSV Upload
               </a>
+              <a href="/admin/fixtures" className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors">
+                Manage Fixtures
+              </a>
               <a href="/fixtures" className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors">
                 View Fixtures
               </a>

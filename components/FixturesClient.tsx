@@ -202,7 +202,7 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
               <MonthCalendar
                 fixtures={filteredFixtures}
                 onFixtureClick={setSelectedFixture}
-                initialDate={weekStart}
+                initialDate={new Date()}
               />
             )}
           </div>
