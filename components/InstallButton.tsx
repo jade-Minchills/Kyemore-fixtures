@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Download, X, Share } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -11,14 +12,23 @@ interface BeforeInstallPromptEvent extends Event {
 export function InstallButton() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const [showIOSGuide, setShowIOSGuide] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Detect iOS Safari
+    setMounted(true);
+
+    // Hide if already running as installed app
+    const standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+    setIsStandalone(standalone);
+
+    // Detect iOS Safari (not already installed)
     const ios =
-      /iphone|ipad|ipod/i.test(navigator.userAgent) &&
-      !(window.navigator as Navigator & { standalone?: boolean }).standalone;
+      /iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone;
     setIsIOS(ios);
 
     // Capture Android/Chrome install prompt
@@ -30,7 +40,8 @@ export function InstallButton() {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  // Don't render if already installed (standalone mode) or dismissed
+  if (!mounted) return null;
+  if (isStandalone) return null;
   if (hidden) return null;
   if (!installPrompt && !isIOS) return null;
 
@@ -46,22 +57,11 @@ export function InstallButton() {
     }
   };
 
-  return (
-    <>
-      <button
-        onClick={handleClick}
-        title="Add to Home Screen"
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 text-xs font-semibold transition-colors flex-shrink-0"
-      >
-        <Download className="w-3.5 h-3.5" />
-        <span className="hidden sm:inline">Install</span>
-      </button>
-
-      {/* iOS instruction sheet */}
-      {showIOSGuide && (
+  const guide = showIOSGuide
+    ? createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
           onClick={() => setShowIOSGuide(false)}
         >
           <div
@@ -70,7 +70,10 @@ export function InstallButton() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-gray-900">Add to Home Screen</h3>
-              <button onClick={() => setShowIOSGuide(false)} className="p-1 rounded-full hover:bg-gray-100">
+              <button
+                onClick={() => setShowIOSGuide(false)}
+                className="p-1 rounded-full hover:bg-gray-100"
+              >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
@@ -95,8 +98,22 @@ export function InstallButton() {
               Got it
             </button>
           </div>
-        </div>
-      )}
+        </div>,
+        document.body
+      )
+    : null;
+
+  return (
+    <>
+      <button
+        onClick={handleClick}
+        title="Add to Home Screen"
+        className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 text-xs font-semibold transition-colors flex-shrink-0"
+      >
+        <Download className="w-3.5 h-3.5 flex-shrink-0" />
+        <span>Install</span>
+      </button>
+      {guide}
     </>
   );
 }
