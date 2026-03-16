@@ -23,6 +23,7 @@ const TIME_OF_DAY_OPTIONS = [
 ];
 
 const DATE_RANGE_OPTIONS = [
+  { value: 'all-time', label: 'All Time' },
   { value: 'this-week', label: 'This Week' },
   { value: 'next-week', label: 'Next Week' },
   { value: 'this-month', label: 'This Month' },
