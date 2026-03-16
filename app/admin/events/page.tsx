@@ -12,6 +12,8 @@ import {
   Clock,
   MapPin,
   CalendarPlus,
+  Pencil,
+  Check,
 } from 'lucide-react';
 import { Event, FixtureWithSport } from '@/lib/types';
 import { AdminHeader } from '@/components/AdminHeader';
@@ -29,6 +31,22 @@ interface EventRow {
   end: string;
   status: string;
   source: 'manual' | 'csv'; // which table to delete from
+}
+
+function toDateInput(iso: string) { return new Date(iso).toISOString().slice(0, 10); }
+function toTimeInput(iso: string) {
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+interface EditForm {
+  title: string;
+  description: string;
+  venue: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  status: string;
 }
 
 function formatDisplayDate(iso: string) {
@@ -52,6 +70,9 @@ export default function AdminEventsPage() {
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<EditForm | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
@@ -207,6 +228,75 @@ export default function AdminEventsPage() {
       setDeletingId(null);
     }
   };
+
+  const startEdit = (row: EventRow) => {
+    setEditingId(row.id);
+    setEditForm({
+      title: row.title,
+      description: row.description ?? '',
+      venue: row.venue,
+      date: toDateInput(row.start),
+      startTime: toTimeInput(row.start),
+      endTime: toTimeInput(row.end),
+      status: row.status,
+    });
+    setError('');
+  };
+
+  const cancelEdit = () => { setEditingId(null); setEditForm(null); };
+
+  const handleSave = async (row: EventRow) => {
+    if (!editForm) return;
+    setSavingId(row.id);
+    setError('');
+
+    const start = `${editForm.date}T${editForm.startTime}:00`;
+    const end = `${editForm.date}T${editForm.endTime}:00`;
+
+    if (new Date(end) <= new Date(start)) {
+      setError('End time must be after start time.');
+      setSavingId(null);
+      return;
+    }
+
+    if (row.source === 'manual') {
+      const res = await fetch(`/api/events/${row.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editForm.title.trim(),
+          description: editForm.description || null,
+          venue: editForm.venue,
+          start_datetime: start,
+          end_datetime: end,
+          status: editForm.status,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) { setError(json.error ?? 'Failed to save.'); setSavingId(null); return; }
+    } else {
+      if (!supabase) { setError('Not connected.'); setSavingId(null); return; }
+      const { error: updateError } = await supabase.from('fixtures').update({
+        title: editForm.title.trim(),
+        notes: editForm.description || null,
+        field: editForm.venue,
+        start_time: start,
+        end_time: end,
+        status: editForm.status,
+      }).eq('id', row.id);
+      if (updateError) { setError(`Failed to save: ${updateError.message}`); setSavingId(null); return; }
+    }
+
+    setSuccess(`"${editForm.title}" updated.`);
+    setRows(prev => prev.map(r => r.id === row.id
+      ? { ...r, title: editForm.title.trim(), description: editForm.description || null, venue: editForm.venue, start, end: end, status: editForm.status }
+      : r
+    ));
+    cancelEdit();
+    setSavingId(null);
+  };
+
+  const inputCls = 'w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 text-gray-900 text-sm transition-colors';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-teal-50">
@@ -376,63 +466,123 @@ export default function AdminEventsPage() {
             </div>
           ) : (
             <ul className="divide-y divide-gray-100">
-              {rows.map(row => (
-                <li key={`${row.source}-${row.id}`} className="flex items-start gap-4 px-6 py-5 hover:bg-gray-50 transition-colors">
-                  <div className="mt-1 w-3 h-3 rounded-full flex-shrink-0 bg-purple-500" />
+              {rows.map(row => {
+                const isEditing = editingId === row.id;
+                return (
+                  <li key={`${row.source}-${row.id}`} className={`px-4 sm:px-6 py-4 sm:py-5 transition-colors ${isEditing ? 'bg-green-50' : 'hover:bg-gray-50'}`}>
+                    {isEditing && editForm ? (
+                      /* ── Edit Form ── */
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="sm:col-span-2">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
+                            <input className={inputCls} value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                            <textarea className={inputCls + ' resize-none'} rows={2} value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} placeholder="Optional" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Venue</label>
+                            <select className={inputCls + ' bg-white'} value={editForm.venue} onChange={e => setEditForm({ ...editForm, venue: e.target.value })}>
+                              {VENUES.map(v => <option key={v} value={v}>{v}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                            <select className={inputCls + ' bg-white'} value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })}>
+                              {STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+                            <input type="date" className={inputCls} value={editForm.date} onChange={e => setEditForm({ ...editForm, date: e.target.value })} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Start</label>
+                              <input type="time" className={inputCls} value={editForm.startTime} onChange={e => setEditForm({ ...editForm, startTime: e.target.value })} />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">End</label>
+                              <input type="time" className={inputCls} value={editForm.endTime} onChange={e => setEditForm({ ...editForm, endTime: e.target.value })} />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 pt-1">
+                          <button
+                            onClick={() => handleSave(row)}
+                            disabled={savingId === row.id}
+                            className="flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                          >
+                            <Check className="w-4 h-4" />
+                            {savingId === row.id ? 'Saving…' : 'Save'}
+                          </button>
+                          <button onClick={cancelEdit} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* ── Read View ── */
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        <div className="mt-1 w-3 h-3 rounded-full flex-shrink-0 bg-purple-500" />
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-base font-bold text-gray-900">{row.title}</span>
-                      {/* Source badge */}
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        row.source === 'csv'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-purple-100 text-purple-700'
-                      }`}>
-                        {row.source === 'csv' ? 'CSV' : 'Manual'}
-                      </span>
-                      {row.status !== 'scheduled' && (
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                          row.status === 'postponed'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
-                        </span>
-                      )}
-                    </div>
-                    {row.description && (
-                      <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{row.description}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-base font-bold text-gray-900">{row.title}</span>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                              row.source === 'csv' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                            }`}>
+                              {row.source === 'csv' ? 'CSV' : 'Manual'}
+                            </span>
+                            {row.status !== 'scheduled' && (
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                row.status === 'postponed' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+                              </span>
+                            )}
+                          </div>
+                          {row.description && (
+                            <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{row.description}</p>
+                          )}
+                          <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-600">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4 text-gray-400" />
+                              {formatDisplayDate(row.start)}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-4 h-4 text-gray-400" />
+                              {formatDisplayTime(row.start)} – {formatDisplayTime(row.end)}
+                            </span>
+                            {row.venue && (
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-4 h-4 text-gray-400" />
+                                {row.venue}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button onClick={() => startEdit(row)} title="Edit event" className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors">
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(row)}
+                            disabled={deletingId === row.id}
+                            title="Delete event"
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
                     )}
-                    <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-600">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        {formatDisplayDate(row.start)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        {formatDisplayTime(row.start)} – {formatDisplayTime(row.end)}
-                      </span>
-                      {row.venue && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4 text-gray-400" />
-                          {row.venue}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Delete */}
-                  <button
-                    onClick={() => handleDelete(row)}
-                    disabled={deletingId === row.id}
-                    title="Delete event"
-                    className="flex-shrink-0 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
