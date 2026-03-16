@@ -108,10 +108,10 @@ export function InstallButton() {
       <button
         onClick={handleClick}
         title="Add to Home Screen"
-        className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 text-xs font-semibold transition-colors flex-shrink-0"
+        className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 text-xs font-semibold transition-colors flex-shrink-0 leading-none"
       >
-        <Download className="w-3.5 h-3.5 flex-shrink-0" />
-        <span>Install</span>
+        <Download className="w-3.5 h-3.5 flex-shrink-0 block" />
+        <span className="leading-none">Install</span>
       </button>
       {guide}
     </>
