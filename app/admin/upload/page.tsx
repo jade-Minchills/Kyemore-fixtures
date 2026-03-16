@@ -3,10 +3,11 @@
 import { useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Upload, FileSpreadsheet, AlertTriangle, CheckCircle, LogOut, X, Download } from 'lucide-react';
+import { Upload, FileSpreadsheet, AlertTriangle, CheckCircle, X, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { ParsedFixture, ClashDetection, UploadRow } from '@/lib/types';
 import { detectClashes, generateSlug, getDefaultSportColor } from '@/lib/date-utils';
+import { AdminHeader } from '@/components/AdminHeader';
 
 export default function AdminUploadPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -18,14 +19,6 @@ export default function AdminUploadPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const supabase = createClient();
-
-  const handleLogout = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
-    router.push('/admin/login');
-    router.refresh();
-  };
 
   const validateRow = (row: UploadRow, index: number): ParsedFixture => {
     const errors: string[] = [];
@@ -289,50 +282,12 @@ export default function AdminUploadPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-teal-50">
-      {/* Header */}
-      <div className="bg-white border-b-2 border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Upload</h1>
-              <p className="text-gray-600 mt-1">Upload fixtures from CSV or XLSX</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <a
-                href="/admin/fixtures"
-                className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors"
-              >
-                Manage Fixtures
-              </a>
-              <a
-                href="/admin/events"
-                className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors"
-              >
-                Manage Events
-              </a>
-              <a
-                href="/fixtures"
-                className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors"
-              >
-                View Fixtures
-              </a>
-              <button
-                onClick={handleLogout}
-                data-testid="logout-button"
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AdminHeader title="CSV Upload" subtitle="Upload fixtures from CSV or XLSX" activePage="upload" />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Upload Section */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 mb-4 sm:mb-6">
           <div className="flex items-center gap-3 mb-6">
             <FileSpreadsheet className="w-6 h-6 text-green-600" />
             <h2 className="text-xl font-bold text-gray-900">Upload Spreadsheet</h2>
@@ -444,9 +399,9 @@ export default function AdminUploadPage() {
 
         {/* Preview Table */}
         {parsedData.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
-            <div className="p-6 border-b-2 border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">Preview ({parsedData.length} rows)</h2>
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-4 sm:mb-6">
+            <div className="p-4 sm:p-6 border-b-2 border-gray-200">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Preview ({parsedData.length} rows)</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full" data-testid="preview-table">
@@ -501,8 +456,8 @@ export default function AdminUploadPage() {
             </div>
 
             {/* Import Button */}
-            <div className="p-6 border-t-2 border-gray-200 bg-gray-50">
-              <div className="flex items-center justify-between">
+            <div className="p-4 sm:p-6 border-t-2 border-gray-200 bg-gray-50">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
                 <div className="text-sm text-gray-600">
                   {hasErrors && (
                     <p className="text-red-600 font-medium">

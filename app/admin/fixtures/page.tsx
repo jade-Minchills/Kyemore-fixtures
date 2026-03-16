@@ -3,18 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import {
-  Trash2,
-  AlertTriangle,
-  CheckCircle,
-  LogOut,
-  X,
-  Calendar,
-  Clock,
-  MapPin,
-  Search,
-} from 'lucide-react';
+import { Trash2, AlertTriangle, CheckCircle, X, Calendar, Clock, MapPin, Search } from 'lucide-react';
 import { FixtureWithSport } from '@/lib/types';
+import { AdminHeader } from '@/components/AdminHeader';
 
 function formatDisplayDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-IE', {
@@ -57,12 +48,6 @@ export default function AdminFixturesPage() {
     fetchFixtures();
   }, [fetchFixtures]);
 
-  const handleLogout = async () => {
-    if (supabase) await supabase.auth.signOut();
-    router.push('/admin/login');
-    router.refresh();
-  };
-
   const handleDelete = async (id: string, label: string) => {
     if (!confirm(`Delete "${label}"? This cannot be undone.`)) return;
     setDeletingId(id);
@@ -103,37 +88,9 @@ export default function AdminFixturesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-teal-50">
-      {/* Header */}
-      <div className="bg-white border-b-2 border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Manage Fixtures</h1>
-              <p className="text-gray-600 mt-1">View and delete existing fixtures</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <a href="/admin/upload" className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors">
-                CSV Upload
-              </a>
-              <a href="/admin/events" className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors">
-                Manage Events
-              </a>
-              <a href="/fixtures" className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors">
-                View Fixtures
-              </a>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AdminHeader title="Manage Fixtures" subtitle="View and delete existing fixtures" activePage="fixtures" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6">
 
         {/* Feedback banners */}
         {success && (
