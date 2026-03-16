@@ -11,7 +11,8 @@ import { ViewMode, ViewToggle } from '@/components/ViewToggle';
 import { ListView } from '@/components/ListView';
 import { MonthCalendar } from '@/components/MonthCalendar';
 import { FixturesHeader } from '@/components/FixturesHeader';
-import { addWeeks, addDays, startOfMonth, endOfMonth } from 'date-fns';
+import { STANDARD_FIELDS } from '@/components/FieldFilter';
+import { addWeeks, addDays, startOfMonth, endOfMonth, subYears, addYears } from 'date-fns';
 
 interface FixturesClientProps {
   sports: Sport[];
@@ -20,10 +21,11 @@ interface FixturesClientProps {
 
 export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
+  const [selectedFields, setSelectedFields] = useState<string[]>([]); // Top field filter chips
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFixture, setSelectedFixture] = useState<FixtureWithSport | null>(null);
-  const [dateRange, setDateRange] = useState('this-week');
-  const [selectedField, setSelectedField] = useState('all');
+  const [dateRange, setDateRange] = useState('all-time'); // Default to All Time
+  const [selectedField, setSelectedField] = useState('all'); // Dropdown filter
   const [selectedTimeOfDay, setSelectedTimeOfDay] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState<string[]>(['scheduled']);
   const [view, setView] = useState<ViewMode>('list'); // Default to list for mobile-first
@@ -31,7 +33,13 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
   // Get date range based on selection
   const { start: weekStart, end: weekEnd } = useMemo(() => {
     const today = new Date();
-    if (dateRange === 'next-week') {
+    if (dateRange === 'all-time') {
+      // Return a very wide range for "All Time"
+      return {
+        start: subYears(today, 10),
+        end: addYears(today, 10),
+      };
+    } else if (dateRange === 'next-week') {
       const nextWeek = addWeeks(today, 1);
       return getCurrentWeekRange(nextWeek);
     } else if (dateRange === 'this-month') {
@@ -45,14 +53,10 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
 
   const weekDays = getWeekDays(weekStart);
 
-  // Get unique fields
+  // Get unique fields from fixtures (for dropdown) - use standard field names
   const fields = useMemo(() => {
-    const fieldSet = new Set<string>();
-    fixtures.forEach(f => {
-      if (f.field) fieldSet.add(f.field);
-    });
-    return Array.from(fieldSet).sort();
-  }, [fixtures]);
+    return STANDARD_FIELDS.map(f => f.name);
+  }, []);
 
   // Filter fixtures
   const filteredFixtures = useMemo(() => {
@@ -60,13 +64,20 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
       const fixtureDate = new Date(fixture.start_time);
       const fixtureHour = fixtureDate.getHours();
 
-      // Date range filter
-      if (fixtureDate < weekStart || fixtureDate > addDays(weekEnd, 1)) {
+      // Date range filter (skip for all-time)
+      if (dateRange !== 'all-time') {
+        if (fixtureDate < weekStart || fixtureDate > addDays(weekEnd, 1)) {
+          return false;
+        }
+      }
+
+      // Sport filter (if any sports selected in sidebar/other filters)
+      if (selectedSports.length > 0 && !selectedSports.includes(fixture.sport.slug)) {
         return false;
       }
 
-      // Sport filter
-      if (selectedSports.length > 0 && !selectedSports.includes(fixture.sport.slug)) {
+      // Top field filter chips
+      if (selectedFields.length > 0 && !selectedFields.includes(fixture.field || '')) {
         return false;
       }
 
@@ -82,7 +93,7 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
         if (!matchesSearch) return false;
       }
 
-      // Field filter
+      // Field dropdown filter
       if (selectedField !== 'all' && fixture.field !== selectedField) {
         return false;
       }
@@ -107,13 +118,21 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
 
       return true;
     });
-  }, [fixtures, selectedSports, searchQuery, weekStart, weekEnd, selectedField, selectedTimeOfDay, selectedStatus]);
+  }, [fixtures, selectedSports, selectedFields, searchQuery, weekStart, weekEnd, dateRange, selectedField, selectedTimeOfDay, selectedStatus]);
 
   const handleToggleSport = (slug: string) => {
     if (selectedSports.includes(slug)) {
       setSelectedSports(selectedSports.filter(s => s !== slug));
     } else {
       setSelectedSports([...selectedSports, slug]);
+    }
+  };
+
+  const handleToggleField = (fieldName: string) => {
+    if (selectedFields.includes(fieldName)) {
+      setSelectedFields(selectedFields.filter(f => f !== fieldName));
+    } else {
+      setSelectedFields([...selectedFields, fieldName]);
     }
   };
 
@@ -124,6 +143,8 @@ export function FixturesClient({ sports, fixtures }: FixturesClientProps) {
         sports={sports}
         selectedSports={selectedSports}
         onToggleSport={handleToggleSport}
+        selectedFields={selectedFields}
+        onToggleField={handleToggleField}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         view={view}
