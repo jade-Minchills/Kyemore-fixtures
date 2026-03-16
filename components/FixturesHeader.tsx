@@ -6,6 +6,7 @@ import { FieldFilter } from '@/components/FieldFilter';
 import { SearchBar } from '@/components/SearchBar';
 import { ViewToggle, ViewMode } from '@/components/ViewToggle';
 import { FilterSheet } from '@/components/FilterSheet';
+import { InstallButton } from '@/components/InstallButton';
 import { Sport } from '@/lib/types';
 
 interface FixturesHeaderProps {
@@ -99,6 +100,7 @@ export function FixturesHeader({
 
           {/* View Toggle + Filter Button - Right side */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            <InstallButton />
             {/* ViewToggle - Hidden on mobile, shown on tablet/desktop */}
             <div className="hidden md:block">
               <ViewToggle view={view} onViewChange={onViewChange} />
