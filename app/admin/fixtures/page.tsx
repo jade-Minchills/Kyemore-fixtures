@@ -159,7 +159,7 @@ export default function AdminFixturesPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by title, sport, field, or team…"
-            className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors shadow-sm"
+            className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors shadow-sm text-gray-900 placeholder:text-gray-500"
           />
         </div>
 

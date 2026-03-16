@@ -222,7 +222,7 @@ export default function AdminEventsPage() {
                   onChange={e => setTitle(e.target.value)}
                   placeholder="e.g. Club Awards Night"
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-500"
                 />
               </div>
 
@@ -236,7 +236,7 @@ export default function AdminEventsPage() {
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Optional details about the event"
                   rows={3}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors resize-none"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors resize-none text-gray-900 placeholder:text-gray-500"
                 />
               </div>
 
@@ -249,7 +249,7 @@ export default function AdminEventsPage() {
                   value={venue}
                   onChange={e => setVenue(e.target.value as (typeof VENUES)[number])}
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors bg-white"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors bg-white text-gray-900"
                 >
                   {VENUES.map(v => (
                     <option key={v} value={v}>{v}</option>
@@ -263,7 +263,7 @@ export default function AdminEventsPage() {
                 <select
                   value={status}
                   onChange={e => setStatus(e.target.value as (typeof STATUSES)[number])}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors bg-white"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors bg-white text-gray-900"
                 >
                   {STATUSES.map(s => (
                     <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
@@ -281,7 +281,7 @@ export default function AdminEventsPage() {
                   value={date}
                   onChange={e => setDate(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-500"
                 />
               </div>
 
@@ -296,7 +296,7 @@ export default function AdminEventsPage() {
                     value={startTime}
                     onChange={e => setStartTime(e.target.value)}
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-500"
                   />
                 </div>
                 <div>
@@ -308,7 +308,7 @@ export default function AdminEventsPage() {
                     value={endTime}
                     onChange={e => setEndTime(e.target.value)}
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-500"
                   />
                 </div>
               </div>
