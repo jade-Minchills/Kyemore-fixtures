@@ -222,7 +222,7 @@ export default function AdminEventsPage() {
                   onChange={e => setTitle(e.target.value)}
                   placeholder="e.g. Club Awards Night"
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-600"
                 />
               </div>
 
@@ -236,7 +236,7 @@ export default function AdminEventsPage() {
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Optional details about the event"
                   rows={3}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors resize-none text-gray-900 placeholder:text-gray-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors resize-none text-gray-900 placeholder:text-gray-600"
                 />
               </div>
 
@@ -281,7 +281,7 @@ export default function AdminEventsPage() {
                   value={date}
                   onChange={e => setDate(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-600"
                 />
               </div>
 
@@ -296,7 +296,7 @@ export default function AdminEventsPage() {
                     value={startTime}
                     onChange={e => setStartTime(e.target.value)}
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-500"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-600"
                   />
                 </div>
                 <div>
@@ -308,7 +308,7 @@ export default function AdminEventsPage() {
                     value={endTime}
                     onChange={e => setEndTime(e.target.value)}
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-500"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-gray-900 placeholder:text-gray-600"
                   />
                 </div>
               </div>
