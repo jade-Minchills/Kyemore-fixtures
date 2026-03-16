@@ -3,6 +3,7 @@
 import { X, SlidersHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { STANDARD_FIELDS } from '@/components/FieldFilter';
 
 interface FilterSheetProps {
   fields: string[];
