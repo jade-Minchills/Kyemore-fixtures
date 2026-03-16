@@ -119,15 +119,14 @@ export function FixturesHeader({
           </div>
         </div>
 
-        {/* Sport Filters + Search Row - Compact horizontal layout */}
+        {/* Field Filters + Search Row - Compact horizontal layout */}
         {!isCompact && (
           <div className="flex flex-col sm:flex-row gap-2 md:gap-3 transition-opacity duration-300">
-            {/* Sport Filters */}
+            {/* Field Filters (replaces Sport Filters) */}
             <div className="flex-shrink-0">
-              <SportFilter
-                sports={sports}
-                selectedSports={selectedSports}
-                onToggleSport={onToggleSport}
+              <FieldFilter
+                selectedFields={selectedFields}
+                onToggleField={onToggleField}
               />
             </div>
             
