@@ -33,6 +33,8 @@ export function FixturesHeader({
   sports,
   selectedSports,
   onToggleSport,
+  selectedFields,
+  onToggleField,
   searchQuery,
   onSearchChange,
   view,
