@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { SportFilter } from '@/components/SportFilter';
+import { FieldFilter } from '@/components/FieldFilter';
 import { SearchBar } from '@/components/SearchBar';
 import { ViewToggle, ViewMode } from '@/components/ViewToggle';
 import { FilterSheet } from '@/components/FilterSheet';
@@ -12,6 +12,8 @@ interface FixturesHeaderProps {
   sports: Sport[];
   selectedSports: string[];
   onToggleSport: (slug: string) => void;
+  selectedFields: string[];
+  onToggleField: (fieldName: string) => void;
   searchQuery: string;
   onSearchChange: (value: string) => void;
   view: ViewMode;
