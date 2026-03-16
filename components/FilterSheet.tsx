@@ -194,7 +194,7 @@ export function FilterSheet({
             {/* Field Filter */}
             <div>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '12px' }}>
-                Field
+                Venue
               </label>
               <select
                 data-testid="field-filter-select"
@@ -211,10 +211,10 @@ export function FilterSheet({
                   outline: 'none',
                 }}
               >
-                <option value="all">All Fields</option>
-                {fields.map((field) => (
-                  <option key={field} value={field}>
-                    {field}
+                <option value="all">All Venues</option>
+                {STANDARD_FIELDS.map((field) => (
+                  <option key={field.id} value={field.name}>
+                    {field.name}
                   </option>
                 ))}
               </select>
