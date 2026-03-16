@@ -97,7 +97,7 @@ export function Filters({
           {/* Field Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Field
+              Venue
             </label>
             <select
               data-testid="field-filter-select"
@@ -105,10 +105,10 @@ export function Filters({
               onChange={(e) => onFieldChange(e.target.value)}
               className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors bg-white shadow-sm"
             >
-              <option value="all">All Fields</option>
-              {fields.map((field) => (
-                <option key={field} value={field}>
-                  {field}
+              <option value="all">All Venues</option>
+              {STANDARD_FIELDS.map((field) => (
+                <option key={field.id} value={field.name}>
+                  {field.name}
                 </option>
               ))}
             </select>
