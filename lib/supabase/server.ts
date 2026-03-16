@@ -54,6 +54,9 @@ function getSampleFixtures() {
   const today = new Date();
   const sports = getSampleSports();
   
+  // Standard field names
+  const FIELDS = ['Rugby Field', 'Soccer Field', 'Clubhouse'];
+  
   // Sample event titles and descriptions for "Events" type
   const eventTitles = [
     { title: 'Club Meeting', notes: 'Monthly club committee meeting to discuss upcoming fixtures and events.' },
@@ -87,6 +90,16 @@ function getSampleFixtures() {
       const eventData = isEvent ? eventTitles[eventIndex % eventTitles.length] : null;
       if (isEvent) eventIndex++;
       
+      // Assign field based on sport type using standardized names
+      let field: string;
+      if (isEvent) {
+        field = 'Clubhouse';
+      } else if (sport.slug === 'rugby') {
+        field = 'Rugby Field';
+      } else {
+        field = 'Soccer Field';
+      }
+      
       fixtures.push({
         id: `fixture-${i}-${j}`,
         sport_id: sport.id,
@@ -95,7 +108,7 @@ function getSampleFixtures() {
         away_team: isEvent ? '' : `Away Team ${String.fromCharCode(88 - j)}`,
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
-        field: isEvent ? (j % 2 === 0 ? 'Clubhouse' : 'Gym') : `Field ${(j % 3) + 1}`,
+        field: field,
         location_name: 'Kylemore Sports Ground',
         status: 'scheduled',
         notes: isEvent ? eventData!.notes : '',
