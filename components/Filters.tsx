@@ -2,6 +2,7 @@
 
 import { Filter, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { STANDARD_FIELDS } from '@/components/FieldFilter';
 
 interface FiltersProps {
   fields: string[];
