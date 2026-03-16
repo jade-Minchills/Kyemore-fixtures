@@ -366,7 +366,7 @@ export default function AdminUploadPage() {
               <p><code className="bg-blue-100 px-1 rounded">date</code> - Date in YYYY-MM-DD format</p>
               <p><code className="bg-blue-100 px-1 rounded">start_time</code> - Start time in HH:MM format</p>
               <p><code className="bg-blue-100 px-1 rounded">end_time</code> - End time in HH:MM format</p>
-              <p><code className="bg-blue-100 px-1 rounded">field</code> - Field name (e.g., Field 1, Clubhouse)</p>
+              <p><code className="bg-blue-100 px-1 rounded">field</code> - Field name: Rugby Field, Soccer Field, or Clubhouse</p>
             </div>
           </div>
 
