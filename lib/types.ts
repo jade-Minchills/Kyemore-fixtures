@@ -19,6 +19,9 @@ export interface Fixture {
   end_time: string;
   field: string | null;
   location_name: string;
+  competition: string | null;
+  round: string | null;
+  is_home: boolean | null;
   status: 'scheduled' | 'postponed' | 'cancelled';
   notes: string | null;
   created_at: string;
@@ -40,6 +43,9 @@ export interface UploadRow {
   end_time: string;
   field: string;
   location_name?: string;
+  competition?: string;
+  round?: string;
+  is_home?: boolean;
   status?: 'scheduled' | 'postponed' | 'cancelled';
   notes?: string;
 }
@@ -54,4 +60,16 @@ export interface ClashDetection {
   fixture1: ParsedFixture;
   fixture2: ParsedFixture;
   message: string;
+}
+
+// Manual event (distinct from CSV-imported fixtures)
+export interface Event {
+  id: string;
+  title: string;
+  description: string | null;
+  venue: 'Rugby Field' | 'Soccer Field' | 'Clubhouse';
+  start_datetime: string;
+  end_datetime: string;
+  status: 'scheduled' | 'postponed' | 'cancelled';
+  created_at: string;
 }

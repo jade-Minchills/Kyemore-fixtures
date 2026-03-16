@@ -299,6 +299,12 @@ export default function AdminUploadPage() {
             </div>
             <div className="flex items-center gap-4">
               <a
+                href="/admin/events"
+                className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors"
+              >
+                Manage Events
+              </a>
+              <a
                 href="/fixtures"
                 className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors"
               >

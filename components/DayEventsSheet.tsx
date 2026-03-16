@@ -189,9 +189,27 @@ export function DayEventsSheet({ date, fixtures, onClose, onFixtureClick }: DayE
                   </div>
 
                   {/* Title */}
-                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 8px 0' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px 0' }}>
                     {fixture.title}
                   </h3>
+                  {fixture.competition && (
+                    <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>{fixture.competition}</span>
+                      {fixture.round && <span>· {fixture.round}</span>}
+                      {fixture.is_home !== null && fixture.is_home !== undefined && (
+                        <span style={{
+                          padding: '2px 8px',
+                          borderRadius: '9999px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          backgroundColor: fixture.is_home ? '#ECFDF5' : '#EFF6FF',
+                          color: fixture.is_home ? '#065F46' : '#1E40AF',
+                        }}>
+                          {fixture.is_home ? 'Home' : 'Away'}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Teams - Only show for sports matches, not events */}
                   {fixture.sport.slug !== 'events' && fixture.home_team && fixture.away_team && (

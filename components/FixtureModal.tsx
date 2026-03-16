@@ -1,7 +1,7 @@
 'use client';
 
 import { FixtureWithSport } from '@/lib/types';
-import { X, Calendar, Clock, MapPin, Users, FileText } from 'lucide-react';
+import { X, Calendar, Clock, MapPin, Users, FileText, Trophy, Hash, Home } from 'lucide-react';
 import { formatTime, formatDate } from '@/lib/date-utils';
 
 interface FixtureModalProps {
@@ -36,8 +36,18 @@ export function FixtureModal({ fixture, onClose }: FixtureModalProps) {
             <X className="w-6 h-6" />
           </button>
           <div className="pr-12">
-            <div className="text-sm font-semibold mb-2 opacity-90">{fixture.sport.name}</div>
+            <div className="flex items-center gap-2 text-sm font-semibold mb-2 opacity-90">
+              <span>{fixture.sport.name}</span>
+              {fixture.is_home !== null && fixture.is_home !== undefined && (
+                <span className="px-2 py-0.5 bg-white/20 rounded-full text-xs">
+                  {fixture.is_home ? '🏠 Home' : '✈️ Away'}
+                </span>
+              )}
+            </div>
             <h2 className="text-3xl font-bold mb-2">{fixture.title}</h2>
+            {fixture.competition && (
+              <div className="text-sm opacity-90 mb-1">{fixture.competition}{fixture.round ? ` · ${fixture.round}` : ''}</div>
+            )}
             {/* Only show teams for sports, not events */}
             {fixture.sport.slug !== 'events' && fixture.home_team && fixture.away_team && (
               <div className="flex items-center gap-2 text-lg">
@@ -101,6 +111,20 @@ export function FixtureModal({ fixture, onClose }: FixtureModalProps) {
                     <div className="font-semibold text-gray-900">{fixture.away_team}</div>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Competition & Round */}
+          {fixture.competition && (
+            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+              <Trophy className="w-5 h-5 text-gray-600 mt-0.5" />
+              <div>
+                <div className="text-sm text-gray-600 font-medium">Competition</div>
+                <div className="text-lg font-semibold text-gray-900">{fixture.competition}</div>
+                {fixture.round && (
+                  <div className="text-sm text-gray-600 mt-1">{fixture.round}</div>
+                )}
               </div>
             </div>
           )}

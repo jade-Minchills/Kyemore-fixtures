@@ -1,5 +1,4 @@
 import { createServerClient } from '@supabase/ssr';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
 // Mock client for when Supabase is not configured
@@ -28,6 +27,8 @@ class MockSupabaseClient {
           resolve({ data: getSampleSports(), error: null });
         } else if (table === 'fixtures') {
           resolve({ data: getSampleFixtures(), error: null });
+        } else if (table === 'events') {
+          resolve({ data: [], error: null });
         } else {
           resolve({ data: [], error: null });
         }
@@ -120,14 +121,14 @@ function getSampleFixtures() {
   return fixtures;
 }
 
-export async function createClient(): Promise<SupabaseClient | MockSupabaseClient> {
+export async function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
   // Return mock client if Supabase is not configured
   if (!supabaseUrl || !supabaseKey || supabaseUrl === 'your_supabase_project_url') {
     console.log('⚠️ Supabase not configured - using demo mode with sample data');
-    return new MockSupabaseClient() as unknown as SupabaseClient;
+    return new MockSupabaseClient() as any;
   }
 
   const cookieStore = await cookies();

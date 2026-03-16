@@ -28,15 +28,30 @@ CREATE TABLE IF NOT EXISTS public.fixtures (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. Create indexes for performance
+-- 3. Create events table (manually-created events, no sport/team fields)
+CREATE TABLE IF NOT EXISTS public.events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    description TEXT,
+    venue TEXT NOT NULL CHECK (venue IN ('Rugby Field', 'Soccer Field', 'Clubhouse')),
+    start_datetime TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_datetime TIMESTAMP WITH TIME ZONE NOT NULL,
+    status TEXT DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'postponed', 'cancelled')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_fixtures_start_time ON public.fixtures(start_time);
 CREATE INDEX IF NOT EXISTS idx_fixtures_sport_id ON public.fixtures(sport_id);
 CREATE INDEX IF NOT EXISTS idx_fixtures_field ON public.fixtures(field);
 CREATE INDEX IF NOT EXISTS idx_fixtures_status ON public.fixtures(status);
+CREATE INDEX IF NOT EXISTS idx_events_start_datetime ON public.events(start_datetime);
+CREATE INDEX IF NOT EXISTS idx_events_status ON public.events(status);
 
--- 4. Enable Row Level Security (RLS)
+-- 5. Enable Row Level Security (RLS)
 ALTER TABLE public.sports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.fixtures ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 
 -- 5. Create RLS Policies
 
@@ -92,6 +107,26 @@ CREATE POLICY "Authenticated users can update fixtures"
 -- Authenticated users can delete fixtures
 CREATE POLICY "Authenticated users can delete fixtures"
     ON public.fixtures
+    FOR DELETE
+    TO authenticated
+    USING (TRUE);
+
+-- Public can read events
+CREATE POLICY "Public can read events"
+    ON public.events
+    FOR SELECT
+    USING (TRUE);
+
+-- Authenticated users can insert events
+CREATE POLICY "Authenticated users can insert events"
+    ON public.events
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (TRUE);
+
+-- Authenticated users can delete events
+CREATE POLICY "Authenticated users can delete events"
+    ON public.events
     FOR DELETE
     TO authenticated
     USING (TRUE);

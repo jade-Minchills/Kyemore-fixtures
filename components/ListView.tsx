@@ -60,7 +60,18 @@ export function ListView({ fixtures, onFixtureClick }: ListViewProps) {
           </div>
 
           {/* Title - Competition/Category */}
-          <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-3">{fixture.title}</h3>
+          <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1">{fixture.title}</h3>
+          {fixture.competition && (
+            <div className="text-sm text-gray-500 mb-3 flex items-center gap-2">
+              <span>{fixture.competition}</span>
+              {fixture.round && <span>· {fixture.round}</span>}
+              {fixture.is_home !== null && fixture.is_home !== undefined && (
+                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${fixture.is_home ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'}`}>
+                  {fixture.is_home ? 'Home' : 'Away'}
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Teams - Only show for sports matches, not events */}
           {fixture.sport.slug !== 'events' && fixture.home_team && fixture.away_team && (

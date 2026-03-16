@@ -1,0 +1,402 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+import {
+  Plus,
+  Trash2,
+  AlertTriangle,
+  CheckCircle,
+  LogOut,
+  X,
+  Calendar,
+  Clock,
+  MapPin,
+  CalendarPlus,
+} from 'lucide-react';
+import { Event } from '@/lib/types';
+
+const VENUES = ['Rugby Field', 'Soccer Field', 'Clubhouse'] as const;
+const STATUSES = ['scheduled', 'postponed', 'cancelled'] as const;
+
+function formatDisplayDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-IE', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function formatDisplayTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('en-IE', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+export default function AdminEventsPage() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
+  // Form state
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [venue, setVenue] = useState<(typeof VENUES)[number]>('Clubhouse');
+  const [date, setDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [status, setStatus] = useState<(typeof STATUSES)[number]>('scheduled');
+
+  const router = useRouter();
+  const supabase = createClient();
+
+  const fetchEvents = useCallback(async () => {
+    if (!supabase) return;
+    const { data, error: fetchError } = await supabase
+      .from('events')
+      .select('*')
+      .order('start_datetime');
+    if (!fetchError) setEvents((data as Event[]) ?? []);
+    setLoadingEvents(false);
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
+
+  const handleLogout = async () => {
+    if (supabase) await supabase.auth.signOut();
+    router.push('/admin/login');
+    router.refresh();
+  };
+
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setVenue('Clubhouse');
+    setDate('');
+    setStartTime('');
+    setEndTime('');
+    setStatus('scheduled');
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!date || !startTime || !endTime) {
+      setError('Date, start time and end time are required.');
+      return;
+    }
+
+    const start_datetime = `${date}T${startTime}:00`;
+    const end_datetime = `${date}T${endTime}:00`;
+
+    if (new Date(end_datetime) <= new Date(start_datetime)) {
+      setError('End time must be after start time.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description: description || null, venue, start_datetime, end_datetime, status }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json.error ?? 'Failed to create event.');
+        setSubmitting(false);
+        return;
+      }
+
+      setSuccess(`"${title}" has been added.`);
+      resetForm();
+      await fetchEvents();
+    } catch {
+      setError('An unexpected error occurred.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string, eventTitle: string) => {
+    if (!confirm(`Delete "${eventTitle}"? This cannot be undone.`)) return;
+    setDeletingId(id);
+    setError('');
+    setSuccess('');
+
+    try {
+      const res = await fetch(`/api/events/${id}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json.error ?? 'Failed to delete event.');
+        setDeletingId(null);
+        return;
+      }
+      setSuccess(`"${eventTitle}" has been deleted.`);
+      setEvents(prev => prev.filter(ev => ev.id !== id));
+    } catch {
+      setError('An unexpected error occurred.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-teal-50">
+      {/* Header */}
+      <div className="bg-white border-b-2 border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Manage Events</h1>
+              <p className="text-gray-600 mt-1">Create and remove events manually</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <a href="/admin/upload" className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors">
+                CSV Upload
+              </a>
+              <a href="/fixtures" className="px-4 py-2 text-green-600 hover:text-green-700 font-medium transition-colors">
+                View Fixtures
+              </a>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        {/* Feedback banners */}
+        {success && (
+          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 flex items-center gap-3">
+            <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
+            <p className="font-semibold text-green-900 flex-1">{success}</p>
+            <button onClick={() => setSuccess('')}><X className="w-5 h-5 text-green-600" /></button>
+          </div>
+        )}
+        {error && (
+          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 flex items-center gap-3">
+            <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0" />
+            <p className="font-semibold text-red-900 flex-1">{error}</p>
+            <button onClick={() => setError('')}><X className="w-5 h-5 text-red-600" /></button>
+          </div>
+        )}
+
+        {/* Create Event Form */}
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <CalendarPlus className="w-6 h-6 text-green-600" />
+            <h2 className="text-xl font-bold text-gray-900">Add New Event</h2>
+          </div>
+
+          <form onSubmit={handleCreate} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Title */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  placeholder="e.g. Club Awards Night"
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="Optional details about the event"
+                  rows={3}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors resize-none"
+                />
+              </div>
+
+              {/* Venue */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Venue <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={venue}
+                  onChange={e => setVenue(e.target.value as (typeof VENUES)[number])}
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors bg-white"
+                >
+                  {VENUES.map(v => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  value={status}
+                  onChange={e => setStatus(e.target.value as (typeof STATUSES)[number])}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors bg-white"
+                >
+                  {STATUSES.map(s => (
+                    <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={e => setDate(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
+                />
+              </div>
+
+              {/* Start / End time */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Start <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={e => setStartTime(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    End <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={e => setEndTime(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold rounded-lg hover:from-green-600 hover:to-teal-600 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Plus className="w-5 h-5" />
+                {submitting ? 'Adding...' : 'Add Event'}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Events List */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="p-6 border-b-2 border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">
+              Existing Events
+              {!loadingEvents && (
+                <span className="ml-2 text-sm font-normal text-gray-500">({events.length})</span>
+              )}
+            </h2>
+          </div>
+
+          {loadingEvents ? (
+            <div className="p-12 text-center text-gray-500">Loading events…</div>
+          ) : events.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="text-5xl mb-4">📅</div>
+              <p className="text-gray-500">No events yet. Add one above.</p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {events.map(event => (
+                <li key={event.id} className="flex items-start gap-4 px-6 py-5 hover:bg-gray-50 transition-colors">
+                  {/* Colour dot */}
+                  <div className="mt-1 w-3 h-3 rounded-full flex-shrink-0 bg-purple-500" />
+
+                  {/* Details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-base font-bold text-gray-900">{event.title}</span>
+                      {event.status !== 'scheduled' && (
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          event.status === 'postponed'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                        </span>
+                      )}
+                    </div>
+                    {event.description && (
+                      <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{event.description}</p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        {formatDisplayDate(event.start_datetime)}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        {formatDisplayTime(event.start_datetime)} – {formatDisplayTime(event.end_datetime)}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4 text-gray-400" />
+                        {event.venue}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Delete */}
+                  <button
+                    onClick={() => handleDelete(event.id, event.title)}
+                    disabled={deletingId === event.id}
+                    title="Delete event"
+                    className="flex-shrink-0 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
