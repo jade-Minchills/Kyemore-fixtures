@@ -32,7 +32,7 @@
 ```bash
 # Build locally to verify
 yarn build
-
+d
 # Push to GitHub
 git add .
 git commit -m "Initial deployment"
